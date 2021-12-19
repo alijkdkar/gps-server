@@ -5,7 +5,7 @@ from typing import Hashable
 from hashlab import AESCipher
 from flask.json import jsonify
 from flask_cors.core import serialize_option
-
+import constes
 
 class Settingg:
     def __init__(self,settingId,Name,value,Desc,systemID) -> None:
@@ -49,9 +49,20 @@ class Token:
         header =str(base64.encodestring( bytes("{alg: RS256,typ: JWT}".encode())))
         print("Step 1==>"+header)
         PayLoad=str(base64.encodestring(bytes( str(self.toJSON()).encode())))
-        signiture =str( AESCipher("662ede816988e58fb6d057d9d85605e0").encrypt(header+"."+PayLoad))
+        signiture =str( AESCipher(constes.CryptionKey).encrypt(header+"."+PayLoad))
         return header+"."+PayLoad+"."+signiture
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
+    
+    def checkToken(token):
+        
+        header,pyload,signiture = str(token).split('.')
+        nowSignuture =str( AESCipher(constes.CryptionKey).encrypt(header+"."+pyload))
+        print("signi1-->"+signiture)
+        print("signi2-->"+nowSignuture)
+
+        if nowSignuture.replace('+',' ') == signiture:
+            return True
+        return False

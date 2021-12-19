@@ -93,6 +93,19 @@ def signInWithCrential():
 
   return str( u.tokenString)
 
+@app.route("/checktokenToken",methods=["POST"])
+def checktokenToken():
+    token =request.args.get("token",default="0",type=str)
+  #password =request.args.get("password",default="0",type=str)
+    print(token)
+    if token == "0" :
+      return "{Status:invalid requst !}"
+    
+    res = Token.checkToken(token)
+    print('HHHHHHHHHHHH')
+    return str(res)
+
+
 
 # def Login(mobile,Password,token):
 #   if mobile =="" :
