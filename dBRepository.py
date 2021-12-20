@@ -1,23 +1,25 @@
 import pyodbc 
+import pandas as pd
 
+from mViewModels import Settingg
 
 
 # connection to db
 class dbEntity:
-    def __init__(self) -> None:
-        server = '.\SQLEXPRESS2014' 
-        database = 'gpsDB' 
-        username = 'sa' 
-        password = '123456789' 
+    def __init__(self):
+        self.server = '.\SQLEXPRESS2014' 
+        self.database = 'gpsDB' 
+        self.username = 'sa' 
+        self.password = '123456789' 
+        self.cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+self.server+';DATABASE='+self.database+';UID='+self.username+';PWD='+ self.password)
+        #cursor = cnxn.cursor()
 
 
-
-    def openConnection(self):
+    def getSetting(self):
+        #self.cursor.execute('select * from settings')
+        print('**********')
+        df = pd.read_sql_query("select * from settings",self.cnxn)
         
-        cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+self.server+';DATABASE='+self.database+';UID='+self.username+';PWD='+ self.password)
-        cursor = cnxn.cursor()
-        cursor.execute('select * from settings')
-        for i in cursor:
-            print(i)
+        listofSetting= [(Settingg(row.id,row.name,row.value,row.Description)) for index, row in df.iterrows() ]  
 
-        return
+        return listofSetting

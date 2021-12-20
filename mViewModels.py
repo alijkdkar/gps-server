@@ -8,7 +8,7 @@ from flask_cors.core import serialize_option
 import constes
 
 class Settingg:
-    def __init__(self,settingId,Name,value,Desc,systemID) -> None:
+    def __init__(self,settingId,Name,value,Desc,systemID='111') -> None:
         self.settingIDd = settingId
         self.name = Name
         self.value = value

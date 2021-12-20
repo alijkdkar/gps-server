@@ -6,11 +6,13 @@ import io
 from flask_cors import CORS
 # from mViewModels import Settingg, User
 import json
-import pyodbc 
+import pyodbc
+from dBRepository import dbEntity 
 import myutils as utils
 from mViewModels import Settingg, Token, User
 from hashlab import AESCipher
 #import hashlib as hasher
+import pandas as pd
 
 
 
@@ -35,21 +37,23 @@ def home():
 def getSettings():
     cID = request.args.get("customerId",default="0",type=str)
 
-    sett =  Settingg(1,"testOption",1,"description",1)
-    settList = [sett,sett,sett,sett,sett]
+    # sett =  Settingg(1,"testOption",1,"description",1)
+    # settList = [sett,sett,sett,sett,sett]
     sitt =[""]
 
    
-    server = '.\SQLEXPRESS2014' 
-    database = 'gpsDB' 
-    username = 'sa' 
-    password = '123456789' 
-    cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
-    cursor = cnxn.cursor()
-    cursor.execute('select * from settings')
-    for i in cursor:
-        print(i)
-
+    # server = '.\SQLEXPRESS2014' 
+    # database = 'gpsDB' 
+    # username = 'sa' 
+    # password = '123456789' 
+    # cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
+    # #cursor = cnxn.cursor()
+    # #cursor = cnxn.cursor()
+    # #cursor.execute('select id,name,value,Description from settings')
+    # df = pd.read_sql_query("select id,name,value,Description from settings",cnxn)
+    
+    # print(df['name'])
+    settList = dbEntity().getSetting()
     for x in settList:
         sitt.append(x.toJson())
 
@@ -82,7 +86,7 @@ def signInWithCrential():
   #password =request.args.get("password",default="0",type=str)
 
   if crential == "0" :
-    return "invalid requst !"
+    return "{status:invalid requst !}"
   #ss = AESCipher("662ede816988e58fb6d057d9d85605e0").encrypt("ali")
   dd = AESCipher("662ede816988e58fb6d057d9d85605e0").decrypt(crential)
 
@@ -93,16 +97,12 @@ def signInWithCrential():
 
   return str( u.tokenString)
 
-@app.route("/checktokenToken",methods=["POST"])
+#@app.route("/checktokenToken",methods=["POST"])
 def checktokenToken():
     token =request.args.get("token",default="0",type=str)
-  #password =request.args.get("password",default="0",type=str)
-    print(token)
     if token == "0" :
       return "{Status:invalid requst !}"
-    
     res = Token.checkToken(token)
-    print('HHHHHHHHHHHH')
     return str(res)
 
 
