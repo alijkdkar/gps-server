@@ -9,7 +9,9 @@ import json
 import pyodbc
 from dBRepository import dbEntity 
 import myutils as utils
-from viewModel.mViewModels import Settingg, Token, User
+from viewModel.mViewModels import Settingg
+from viewModel.tokenVm import  Token
+from viewModel.userVM import   User
 from hashlab import AESCipher
 #import hashlib as hasher
 import pandas as pd
