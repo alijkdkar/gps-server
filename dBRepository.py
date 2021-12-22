@@ -1,7 +1,7 @@
 import pyodbc 
 import pandas as pd
 
-from mViewModels import Settingg
+from viewModel.mViewModels import Settingg
 
 
 # connection to db
@@ -15,11 +15,20 @@ class dbEntity:
         #cursor = cnxn.cursor()
 
 
-    def getSetting(self):
+    def getSetting(self,customerID):
         #self.cursor.execute('select * from settings')
-        print('**********')
-        df = pd.read_sql_query("select * from settings",self.cnxn)
-        
+        if customerID is None:
+            df = pd.read_sql_query("select * from settings",self.cnxn)
+        else:
+            df = pd.read_sql_query("select * from settings where customerID ="+str( customerID),self.cnxn)
+
+
         listofSetting= [(Settingg(row.id,row.name,row.value,row.Description)) for index, row in df.iterrows() ]  
 
         return listofSetting
+    
+    def signUpMember(self):
+        
+        
+        
+        return True
