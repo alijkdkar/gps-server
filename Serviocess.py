@@ -9,10 +9,11 @@ import json
 import pyodbc
 from dBRepository import dbEntity 
 import myutils as utils
-from mViewModels import Settingg, Token, User
+from viewModel.mViewModels import Settingg, Token, User
 from hashlab import AESCipher
 #import hashlib as hasher
 import pandas as pd
+from functools import wraps
 
 
 
@@ -31,6 +32,19 @@ def home():
     return "Hello, Flask!"
 
 
+def require_api_key(api_method):
+    @wraps(api_method)
+
+    def check_api_key(*args, **kwargs):
+        apikey = request.headers.get('ApiKey') if request.args.get("token",default="0",type=str) else request.headers.get('ApiKey')
+        
+        #token =request.args.get("token",default="0",type=str)
+        if apikey and checktokenToken(apikey):
+            return api_method(*args, **kwargs)
+        else:
+            return None
+
+    return check_api_key
 
 
 @app.route("/getSettings/",methods=["GET"])
@@ -76,6 +90,11 @@ def validationSMS():
   CODE = utils.createvalidationCode()
   print(CODE)
   utils.sendSms(UserName, str( CODE))
+
+
+
+
+
   return "{Code:"+ str(CODE)  +"}"
 
 
@@ -97,13 +116,14 @@ def signInWithCrential():
 
   return str( u.tokenString)
 
-#@app.route("/checktokenToken",methods=["POST"])
-def checktokenToken():
-    token =request.args.get("token",default="0",type=str)
-    if token == "0" :
-      return "{Status:invalid requst !}"
-    res = Token.checkToken(token)
-    return str(res)
+
+def checktokenToken(token):
+    #token =request.args.get("token",default="0",type=str)
+    if token is None or  token == "0" :
+      return False
+    return Token.checkToken(token)
+  
+
 
 
 
