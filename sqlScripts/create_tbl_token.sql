@@ -20,7 +20,7 @@ IF NOT EXISTS (SELECT 1
       CREATE TABLE sec.tokens(
 id INT IDENTITY(1,1),
 userID INT not NULL,
-token NVARCHAR(100),
+token NVARCHAR(max),
 createdDateTime DATETIME default getdate()
 )
    END;

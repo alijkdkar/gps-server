@@ -16,6 +16,7 @@ from hashlab import AESCipher
 #import hashlib as hasher
 import pandas as pd
 from functools import wraps
+import constes
 
 
 
@@ -96,7 +97,6 @@ def validationSMS():
 
 
 
-
   return "{Code:"+ str(CODE)  +"}"
 
 
@@ -109,13 +109,13 @@ def signInWithCrential():
   if crential == "0" :
     return "{status:invalid requst !}"
   #ss = AESCipher("662ede816988e58fb6d057d9d85605e0").encrypt("ali")
-  dd = AESCipher("662ede816988e58fb6d057d9d85605e0").decrypt(crential)
+  dd = AESCipher(constes.CryptionKey).decrypt(crential)
 
 
   
   u = Token(jsonData=dd)
   #todo : Create Token For this user and retrun
-
+  dbEntity().SaveToken(u.id,u.tokenString)
   return str( u.tokenString)
 
 
