@@ -1,7 +1,9 @@
+from re import X
 import pyodbc 
 import pandas as pd
 
 from viewModel.mViewModels import Settingg
+from viewModel.userVM import User
 
 
 # connection to db
@@ -12,7 +14,7 @@ class dbEntity:
         self.username = 'sa' 
         self.password = '123456789' 
         self.cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+self.server+';DATABASE='+self.database+';UID='+self.username+';PWD='+ self.password)
-        #cursor = cnxn.cursor()
+        self.cursor = self.cnxn.cursor()
 
 
     def getSetting(self,customerID):
@@ -27,8 +29,21 @@ class dbEntity:
 
         return listofSetting
     
-    def signUpMember(self):
+    def signUpMember(self,user,personel):
+        user =  User(user)
+        #todo : save Youser and Personel to DataBase
         
         
+        return True
+
+    def SaveToken(self,PersonelID=0,token=""):
+        try:
+            query = "insert into sec.tokens ( userID, token) values ({personID},'{token}')".format(personID=PersonelID,token=str(token).replace("'",""))
+            print(query)
+            self.cursor.execute(query)
+            self.cursor.commit()
+        except Exception as X:
+            print(X)
+            return False
         
         return True
