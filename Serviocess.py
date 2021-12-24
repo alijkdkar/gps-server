@@ -28,7 +28,7 @@ import re
 
 app = Flask(__name__)
 CORS(app)
-
+db = dbEntity()
 
 @app.route("/")
 def home():
@@ -114,8 +114,11 @@ def signInWithCrential():
 
   
   u = Token(jsonData=dd)
+  print(u)
+  user = User(u.userName,"",u.Display,"",None,"",123,None)
+  db.signUpMember(user,None)
   #todo : Create Token For this user and retrun
-  dbEntity().SaveToken(u.id,u.tokenString)
+  db.SaveToken(u.id,u.tokenString)
   return str( u.tokenString)
 
 

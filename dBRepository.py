@@ -30,7 +30,9 @@ class dbEntity:
         return listofSetting
     
     def signUpMember(self,user,personel):
-        user =  User(user)
+        uu = User(user)
+        print(uu.name)
+
         #todo : save Youser and Personel to DataBase
         
         
