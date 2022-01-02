@@ -115,8 +115,10 @@ def signInWithCrential():
   
   u = Token(jsonData=dd)
   print(u)
+  print('asdasdasd')
   user = User(u.userName,"",u.Display,"",None,"",123,None)
-  db.signUpMember(user,None)
+  
+  db.signUpMember(userp=user)
   #todo : Create Token For this user and retrun
   db.SaveToken(u.id,u.tokenString)
   return str( u.tokenString)
