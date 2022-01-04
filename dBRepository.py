@@ -29,12 +29,28 @@ class dbEntity:
 
         return listofSetting
     
-    def signUpMember(self,user,personel):
-        user =  User(user)
+
+    
+    def signUpMember(self,userp):
+        
+        # username = userp.userName[0]
+        # name = userp.name[0] or 'unname'
+        # lastName = userp.lastName[0] or 'unlastname'
+        # displayName=name+' '+lastName
+        insertedID =  userp.saveDB(cursor = self.cursor)
+        
+        # query = """if not exists (select 1 from sec.users where userName='{usernamearg}' )
+        #            insert into sec.personel([Name],[LastName],[DisplayName]) values ('{namearg}','{LastNamearg}','{dsnamearg}')""".format(usernamearg=username,namearg=name,LastNamearg=lastName,dsnamearg=displayName)
+        # print(query)
+        
+        # self.cursor.execute(query)
+        # self.cursor.commit()
+        #print(query)
+
         #todo : save Youser and Personel to DataBase
         
         
-        return True
+        return insertedID
 
     def SaveToken(self,PersonelID=0,token=""):
         try:

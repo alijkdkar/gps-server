@@ -27,7 +27,6 @@ class Token:
     @property
     def tokenString(self):
         header =str(base64.encodestring( bytes("{alg: RS256,typ: JWT}".encode())))
-        print("Step 1==>"+header)
         PayLoad=str(base64.encodestring(bytes( str(self.toJSON()).encode())))
         signiture =str( AESCipher(constes.CryptionKey).encrypt(header+"."+PayLoad))
         return header+"."+PayLoad+"."+signiture
@@ -40,9 +39,6 @@ class Token:
         
         header,pyload,signiture = str(token).split('.')
         nowSignuture =str( AESCipher(constes.CryptionKey).encrypt(header+"."+pyload))
-        print("signi1-->"+signiture)
-        print("signi2-->"+nowSignuture)
-
         if nowSignuture.replace('+',' ') == signiture:
             return True
         return False
