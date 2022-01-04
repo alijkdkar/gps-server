@@ -38,7 +38,7 @@ class dbEntity:
         # lastName = userp.lastName[0] or 'unlastname'
         # displayName=name+' '+lastName
         insertedID =  userp.saveDB(cursor = self.cursor)
-        print('in reposit'+str(insertedID))
+        
         # query = """if not exists (select 1 from sec.users where userName='{usernamearg}' )
         #            insert into sec.personel([Name],[LastName],[DisplayName]) values ('{namearg}','{LastNamearg}','{dsnamearg}')""".format(usernamearg=username,namearg=name,LastNamearg=lastName,dsnamearg=displayName)
         # print(query)
@@ -50,7 +50,7 @@ class dbEntity:
         #todo : save Youser and Personel to DataBase
         
         
-        return True
+        return insertedID
 
     def SaveToken(self,PersonelID=0,token=""):
         try:

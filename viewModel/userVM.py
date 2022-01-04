@@ -13,24 +13,28 @@ class User:
 
     
     def saveDB(self,cursor):
-        print('a')
         username = self.userName[0]
-        print('b')
         name = self.name[0] or 'unname'
-        print('c')
         lastName = self.lastName[0] or 'unlastname'
-        print('d')
         displayName=name+' '+lastName
-        
-        query = """if not exists (select 1 from sec.users where userName='{usernamearg}' )
-                   insert into sec.personel([Name],[LastName],[DisplayName]) values ('{namearg}','{LastNamearg}','{dsnamearg}')
-                   """.format(usernamearg=username,namearg=name,LastNamearg=lastName,dsnamearg=displayName)
+        query = """set nocount on; if not exists (select 1 from sec.users where userName='{usernamearg}' ) 
+                            insert into sec.personel([Name],[LastName],[DisplayName]) 
+                            values ('{namearg}','{LastNamearg}','{dsnamearg}')""".format(usernamearg=int(username) ,namearg=name,LastNamearg=lastName,dsnamearg=displayName)
         print(query)
         cursor.execute(query)
-        id = cursor.fetchone()[0]  # although cursor.fetchval() would be preferred
+        cursor.execute("SELECT @@IDENTITY AS ID;")
+        id =  cursor.fetchone()[0]
+
+        if id is not None or 0:
+            query = """insert into sec.users(personelID,userName,[password],email) values
+                            ({personelID},{userName},NULL,{email})""".format(personelID = id,userName=username,email=self.email or 'NULL')
+            print(query)
+            cursor.execute(query)
+            # cursor.execute("SELECT @@IDENTITY AS ID;")
+            # userid =  cursor.fetchone()[0]               
+                           
         cursor.commit()
         
-        print('fffff')
-
-
+        print(id)
+         
         return id
