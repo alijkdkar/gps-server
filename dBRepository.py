@@ -55,7 +55,6 @@ class dbEntity:
     def SaveToken(self,PersonelID=0,token=""):
         try:
             query = "insert into sec.tokens ( userID, token) values ({personID},'{token}')".format(personID=PersonelID,token=str(token).replace("'",""))
-            print(query)
             self.cursor.execute(query)
             self.cursor.commit()
         except Exception as X:

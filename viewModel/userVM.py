@@ -1,16 +1,34 @@
+
 import pandas as pd
+import dBRepository as db
 
 class User:
-    def __init__(self,userName,password,name,lastName,createdDateTime,email,personelID,id=None):
-     self.id = id or 0  ,
-     self.personelID = personelID,
-     self.userName = userName,
-     self.password=password,
-     self.name =name,
-     self.lastName = lastName,
-     self.createdDateTime = createdDateTime,
-     self.email = email
+    
 
+    def __init__(self,userName=None,password=None,name=None,lastName=None,createdDateTime=None,email=None,personelID=None,id=None):
+        self.id = id or 0  ,
+        self.personelID = personelID,
+        self.userName = userName,
+        self.password=password,
+        self.name =name,
+        self.lastName = lastName,
+        self.createdDateTime = createdDateTime,
+        self.email = email
+    
+
+
+
+    def GetUserFromDbByUserName(self,username):
+        cnxcc = db.dbEntity().cnxn
+        data = pd.read_sql_query("""select * from sec.[users]  as u join sec.personel as p on u.personelID = p.id where userName = '{username}' """.format(username = int(username)),cnxcc)
+        for index,row in data.iterrows():
+            self.id = row.id
+            self.personelID = row.personelID
+            self.userName = row.userName
+            self.name = row.Name
+            
+        
+        return self
     
     def saveDB(self,cursor):
         username = self.userName[0]

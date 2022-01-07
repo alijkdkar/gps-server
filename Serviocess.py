@@ -110,18 +110,18 @@ def signInWithCrential():
     return "{status:invalid requst !}"
   #ss = AESCipher("662ede816988e58fb6d057d9d85605e0").encrypt("ali")
   dd = AESCipher(constes.CryptionKey).decrypt(crential)
-
-
-  
   u = Token(jsonData=dd)
-  print(u)
-  print('asdasdasd')
-  user = User(u.userName,"",u.Display,"",None,"",123,None)
-  
-  personID = db.signUpMember(userp=user)
-  #todo : Create Token For this user and retrun
-  db.SaveToken(PersonelID=personID,token= u.tokenString)
-  return str( u.tokenString)
+  dd=User().GetUserFromDbByUserName(username= u.userName)
+  personID = None
+  if dd.id is None:
+    user = User(u.userName,"",u.Display,"",None,"",123,None)
+    personID= db.signUpMember(userp=user)
+    #todo : Create Token For this user and retrun
+  db.SaveToken(PersonelID=personID or dd.personelID,token= u.tokenString)
+  print('aaa')
+  print(u.tokenString.strip("\n"))
+  print('bbbb')
+  return  f"""{{"status":"200","token":"{str(u.tokenString).strip()}"}}"""#.format(oken={str(u.tokenString)}) 
 
 
 def checktokenToken(token):

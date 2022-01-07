@@ -26,10 +26,10 @@ class Token:
 
     @property
     def tokenString(self):
-        header =str(base64.encodestring( bytes("{alg: RS256,typ: JWT}".encode())))
-        PayLoad=str(base64.encodestring(bytes( str(self.toJSON()).encode())))
-        signiture =str( AESCipher(constes.CryptionKey).encrypt(header+"."+PayLoad))
-        return header+"."+PayLoad+"."+signiture
+        header =str(base64.encodestring( bytes("{alg: RS256,typ: JWT}".encode())).decode()).strip("\n")
+        PayLoad=str(base64.encodestring(bytes( str(self.toJSON()).encode())).decode()).strip("\n")
+        signiture =str( AESCipher(constes.CryptionKey).encrypt(header+"."+PayLoad).decode()).strip("\n")
+        return header.strip("\n")+"."+PayLoad.strip("\n")+"."+signiture.strip("\n")
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
