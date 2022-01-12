@@ -8,12 +8,13 @@ from flask_cors.core import serialize_option
 import constes
 
 class Token:
-    def __init__(self,Display,IsVakidated,id,userName):
+    def __init__(self,Display,IsVakidated,id,userName,password):
         self.Display = Display
         self.isAuth = IsVakidated
         self.id = id
         self.userName = userName
         self.CreationDate =str(datetime.now())
+        self.password = password
 
     def __init__(self,jsonData):
         j = json.loads(jsonData)
@@ -22,13 +23,14 @@ class Token:
         self.Display = j['Display']
         self.isAuth = j['IsVakidated']
         self.CreationDate =str( datetime.now())
+        self.password = j['IsVakidated']
 
 
     @property
     def tokenString(self):
         header =str(base64.encodestring( bytes("{alg: RS256,typ: JWT}".encode())).decode()).strip("\n")
         PayLoad=str(base64.encodestring(bytes( str(self.toJSON()).encode())).decode()).strip("\n")
-        signiture =str( AESCipher(constes.CryptionKey).encrypt(header+"."+PayLoad).decode()).strip("\n")
+        signiture =str(base64.encodestring( AESCipher(constes.CryptionKey).encrypt(header+"."+PayLoad)).decode()).strip("\n")
         return header.strip("\n")+"."+PayLoad.strip("\n")+"."+signiture.strip("\n")
 
     def toJSON(self):
