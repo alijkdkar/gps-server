@@ -21,7 +21,7 @@ class AESCipher(object):
         enc = base64.b64decode(enc)
         #iv = enc[:AES.block_size]
         cipher = AES.new(self.key, AES.MODE_ECB)
-        return cipher.decrypt(enc).decode('utf-8')
+        return self._unpad(cipher.decrypt(enc)).decode('utf-8')
 
     def _pad(self, s):
         return s + (self.bs - len(s) % self.bs) * chr(self.bs - len(s) % self.bs)
