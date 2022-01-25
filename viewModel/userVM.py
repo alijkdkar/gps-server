@@ -11,7 +11,7 @@ import datetime
 class User:
     
 
-    def __init__(self,userName=None,password=None,name=None,lastName=None,createdDateTime=None,email=None,personelID=None,id=None):
+    def __init__(self,userName=None,password="",name=None,lastName=None,createdDateTime=None,email=None,personelID=None,id=None):
         self.id = id or 0  ,
         self.personelID = personelID,
         self.userName = userName,
@@ -26,7 +26,7 @@ class User:
 
     def GetUserFromDbByUserName(self,username):
         cnxcc = db.dbEntity().cnxn
-        data = pd.read_sql_query("""select distinct u.id,u.personelID,u.userName,u.email,p.DisplayName,p.Name ,p.LastName,p.createdDateTime from sec.[users]  as u join sec.personel as p on u.personelID = p.id where userName = '{username}' """.format(username = int(username)),cnxcc)
+        data = pd.read_sql_query("""select distinct u.id,u.personelID,u.userName,u.email,p.DisplayName,p.Name,u.[password] ,p.LastName,p.createdDateTime from sec.[users]  as u join sec.personel as p on u.personelID = p.id where userName = '{username}' """.format(username = int(username)),cnxcc)
         print(data)
         dt_string = "2020-12-18 3:11:09" 
         format = "%Y-%m-%d %H:%M:%S"

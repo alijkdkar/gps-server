@@ -6,6 +6,7 @@ import io
 from flask_cors import CORS
 # from mViewModels import Settingg, User
 import json
+from matplotlib.style import use
 import pyodbc
 from dBRepository import dbEntity 
 import myutils as utils
@@ -109,8 +110,8 @@ def signInWithCrential():
   if crential == "0" :
     return "{status:invalid requst !}"
   #ss = AESCipher("662ede816988e58fb6d057d9d85605e0").encrypt("ali")
-  dd = AESCipher(constes.CryptionKey).decrypt(crential)
-  u = Token(jsonData=dd)
+  dd = AESCipher(constes.CryptionKey).decrypt(crential.replace(" ","+"))
+  u = Token().fillByJson(jsonData=dd)
   newUser=User().GetUserFromDbByUserName(username= u.userName)
   personID = None 
   if newUser.id is None:
@@ -132,33 +133,19 @@ def checktokenToken(token):
   
 
 
+@app.route("/signInWithUserPass",methods=["POST"])
+def signInWithUserPass():
+  username =request.args.get("username",default="",type=str)
+  password =request.args.get("password",default="",type=str)
 
+  if username == "" or password =="":
+    return  f"""{{"status":"400","userInfo"","token":""}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
+  
+  user, token  = db.signInWithPassword(username,password)
+  if user is None or token is None:
+    return f"""{{"status":"401","userInfo"","token":""}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
 
-# def Login(mobile,Password,token):
-#   if mobile =="" :
-#     return "invalid Requst!"
-#   if Password =="":
-#     code  = utils.createvalidationCode()
-#     utils.sendSms(mobile,code)
-#     return code ##todo : encript code
-
-#   #todo : check username and password to DB
-#   token = utils.createToken()
-#   return token
-
-
-
-# #api
-# def forgetPassword(mobile):
-#     code = utils.createvalidationCode()
-#     utils.sendSms(mobile,code)
-#     return code #encript code first
-
-# #api
-# def cheangePassword(mobile,newPassword):
-#     #todo : change password on db
-
-#     return True
+  return  f"""{{"status":"200","userInfo":{str(user.userJsonString )},"token":"{str(token.tokenString).strip()}"}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
 
 
 # if __name__ == "__main__":

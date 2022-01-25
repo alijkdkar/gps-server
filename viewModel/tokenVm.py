@@ -8,15 +8,16 @@ from flask_cors.core import serialize_option
 import constes
 
 class Token:
-    def __init__(self,Display,IsVakidated,id,userName,password):
+    def __init__ (self,Display="",IsValidated=False,id=0,userName=None,password=None):
         self.Display = Display
-        self.isAuth = IsVakidated
+        self.isAuth = IsValidated
         self.id = id
         self.userName = userName
         self.CreationDate =str(datetime.now())
         self.password = password
 
-    def __init__(self,jsonData):
+
+    def fillByJson(self,jsonData):
         j = json.loads(jsonData)
         self.userName=j['userName']
         self.id = j['id']
@@ -24,8 +25,8 @@ class Token:
         self.isAuth = j['IsVakidated']
         self.CreationDate =str( datetime.now())
         self.password = j['IsVakidated']
-
-
+        return self
+    
     @property
     def tokenString(self):
         header =str(base64.encodestring( bytes("{alg: RS256,typ: JWT}".encode())).decode()).strip("\n")

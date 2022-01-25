@@ -1,9 +1,12 @@
+from math import fabs
 from re import X
+from matplotlib.style import use
 import pyodbc 
 import pandas as pd
 
 from viewModel.mViewModels import Settingg
 from viewModel.userVM import User
+from viewModel.tokenVm import Token
 
 
 # connection to db
@@ -51,6 +54,19 @@ class dbEntity:
         
         
         return insertedID
+
+
+    def signInWithPassword(self,username,password):
+        
+        user=User().GetUserFromDbByUserName(username= username)
+        
+        if user.password[0] == password:
+            token = Token(Display=user.userName,IsValidated=True,id =user.id,userName = user.userName,password = "" )
+            self.SaveToken(user.personelID or user.personelID,token= token.tokenString)
+            return user,token
+        else:
+            return None,None
+
 
     def SaveToken(self,PersonelID=0,token=""):
         try:
