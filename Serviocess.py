@@ -102,8 +102,8 @@ def validationSMS():
 
 
 
-@app.route("/signInWithCrential",methods=["POST"])
-def signInWithCrential():
+@app.route("/signUPWithCrential",methods=["POST"])
+def signUPWithCrential():
   crential =request.args.get("crential",default="0",type=str)
   #password =request.args.get("password",default="0",type=str)
 
@@ -119,10 +119,27 @@ def signInWithCrential():
     personID= db.signUpMember(userp=user)
     #todo : Create Token For this user and retrun
   db.SaveToken(PersonelID=personID or newUser.personelID or user.personelID,token= u.tokenString)
-  
-  
-  
   return  f"""{{"status":"200","userInfo":{str(newUser.userJsonString or user.userJsonString)},"token":"{str(u.tokenString).strip()}"}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
+
+
+@app.route("/signInWithCrential",methods=["POST"])
+def signInWithCrential():
+  crential =request.args.get("crential",default="0",type=str)
+  #password =request.args.get("password",default="0",type=str)
+
+  if crential == "0" :
+    return "{status:invalid requst !}"
+  #ss = AESCipher("662ede816988e58fb6d057d9d85605e0").encrypt("ali")
+  dd = AESCipher(constes.CryptionKey).decrypt(crential.replace(" ","+"))
+  u = Token().fillByJson(jsonData=dd)
+  newUser=User().GetUserFromDbByUserName(username= u.userName)
+  if newUser.id is None:
+    #user = User(u.userName,u.password ,u.Display,"",None,"",123,None)
+    # personID= db.signUpMember(userp=user)
+    return  f"""{{status:401,userInfo:"",token:""}}""".strip("\n")
+    #todo : Create Token For this user and retrun
+  db.SaveToken(newUser.personelID,token= u.tokenString)
+  return  f"""{{"status":"200","userInfo":{str(newUser.userJsonString)},"token":"{str(u.tokenString).strip()}"}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
 
 
 def checktokenToken(token):
@@ -139,11 +156,11 @@ def signInWithUserPass():
   password =request.args.get("password",default="",type=str)
 
   if username == "" or password =="":
-    return  f"""{{"status":"400","userInfo"","token":""}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
+    return  f"""{{status:400,userInfo:"",token:""}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
   
   user, token  = db.signInWithPassword(username,password)
   if user is None or token is None:
-    return f"""{{"status":"401","userInfo"","token":""}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
+    return  f"""{{status:401,userInfo:"",token:""}}""".strip("\n")
 
   return  f"""{{"status":"200","userInfo":{str(user.userJsonString )},"token":"{str(token.tokenString).strip()}"}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
 

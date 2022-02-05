@@ -60,8 +60,9 @@ class dbEntity:
         
         user=User().GetUserFromDbByUserName(username= username)
         
-        if user.password[0] == password:
+        if user.password == password:
             token = Token(Display=user.userName,IsValidated=True,id =user.id,userName = user.userName,password = "" )
+            
             self.SaveToken(user.personelID or user.personelID,token= token.tokenString)
             return user,token
         else:

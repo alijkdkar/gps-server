@@ -53,6 +53,11 @@ class User:
         self.createdDateTime =str( datetime.datetime.strptime(str( df.iloc[0].createdDateTime)[0:19], format)), #df.iloc[0].createdDateTime,
         self.email = str(df.iloc[0].email or None)
 
+        self.password =self.password[0] 
+        self.lastName =self.lastName[0] 
+        self.createdDateTime =self.createdDateTime[0] 
+
+
 
 
         return self
