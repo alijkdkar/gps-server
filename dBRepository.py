@@ -36,23 +36,7 @@ class dbEntity:
     
     def signUpMember(self,userp):
         
-        # username = userp.userName[0]
-        # name = userp.name[0] or 'unname'
-        # lastName = userp.lastName[0] or 'unlastname'
-        # displayName=name+' '+lastName
-        insertedID =  userp.saveDB(cursor = self.cursor)
-        
-        # query = """if not exists (select 1 from sec.users where userName='{usernamearg}' )
-        #            insert into sec.personel([Name],[LastName],[DisplayName]) values ('{namearg}','{LastNamearg}','{dsnamearg}')""".format(usernamearg=username,namearg=name,LastNamearg=lastName,dsnamearg=displayName)
-        # print(query)
-        
-        # self.cursor.execute(query)
-        # self.cursor.commit()
-        #print(query)
-
-        #todo : save Youser and Personel to DataBase
-        
-        
+        insertedID =  userp.saveDB(cursor = self.cursor)   
         return insertedID
 
 
@@ -79,3 +63,20 @@ class dbEntity:
             return False
         
         return True
+
+    def saveProduct(self,product):
+        try:
+            query = "prs.uspModifyProduct {id},{product}".format(id=product.pid,product=product.toJSON)
+            self.cursor.execute(query)
+            self.cursor.commit()
+        except Exception as X:
+            print(X)
+            return False
+        
+        return True
+
+    def getProductById(self):
+        pass
+    
+    def getProductsByOwner(self):
+        pass
