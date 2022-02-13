@@ -1,3 +1,13 @@
+IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'gpsManager')
+  BEGIN
+    CREATE DATABASE [gpsManager]
+
+
+END
+go
+use [gpsManager]
+go
+
 ------------schema-----------
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'sec')
 BEGIN
@@ -97,7 +107,6 @@ IF NOT EXISTS (SELECT 1  FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'se
 
 
 
-
 IF NOT EXISTS (SELECT 1
    FROM INFORMATION_SCHEMA.TABLES
    WHERE TABLE_SCHEMA = 'pro'
@@ -107,6 +116,7 @@ CREATE TABLE [pro].[tblProducts](
 	[pid] [int] IDENTITY(1,1) NOT NULL,
 	[pname] [nvarchar](300) NOT NULL,
 	[pOwnerMobile] [nvarchar](15) NULL,
+	[pOwnerPID] [int] NULL,
 	[pMobile] [nvarchar](15) NULL,
 	[ptype] [int] NOT NULL,
 	[pimage] [nvarchar](400) NULL,
@@ -121,3 +131,57 @@ CREATE TABLE [pro].[tblProducts](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 END;
+
+
+
+
+
+
+
+
+go
+
+
+--produtre 
+create  PROCEDURE [pro].[uspModifyProduct]
+    @jsonProductInput nvarchar(max)=Null
+AS 
+    
+BEGIN try
+
+create table #inputs( pid INT, pname NVARCHAR(200), pOwnerPID int, pOwnerMobile NVARCHAR(15), pMobile NVARCHAR(15), ptype int, pimage nvarchar(300), mimiSerial nvarchar(200)
+		, pcreateDate datetime, pUpdateDate datetime, installerCode int)
+
+insert #inputs
+SELECT *
+FROM OPENJSON(@jsonProductInput ) 
+  WITH (
+    pid INT 'strict $.pid',
+    pname NVARCHAR(200) N'$.pname',
+    pOwnerPID int '$.pOwnerPID',
+    pownerMobile NVARCHAR(15) '$.pownerMobile',
+    pMobile NVARCHAR(15) '$.pMobile',
+	ptype int '$.ptype',
+	pimage nvarchar(300) '$.pimage',
+	mimiSerial nvarchar(200) '$.mimiSerial',
+	pcreateDate datetime '$.pcreateDate',
+	pUpdateDate datetime '$.pUpdateDate',
+	installerCode  int '$.installerCode'
+  );
+
+
+  
+  
+  update pro.tblProducts set pname=x.pname, pOwnerMobile =x.pOwnerMobile, pOwnerPID=x.pOwnerPID,pMobile=x. pMobile,ptype=x. ptype,pimage=x. pimage,mimiSerial =x. mimiSerial
+  , pUpdateDate = GETDATE(), installerCode =x.installerCode from #inputs as x where x.pid = pro.tblProducts.pid 
+  
+  
+  insert into pro.tblProducts(pname, pOwnerMobile, pOwnerPID, pMobile, ptype, pimage, mimiSerial, pcreateDate, pUpdateDate, installerCode)
+  select pname, pOwnerMobile, pOwnerPID, pMobile, ptype, pimage, mimiSerial, pcreateDate, pUpdateDate, installerCode from #inputs as t
+  where t.pid = 0 or not exists(select 1 from pro.tblProducts as tb  where t.pid=tb.pid )
+ 
+
+END try
+begin catch
+select 1 as ID,100 as  'Message' 
+end catch

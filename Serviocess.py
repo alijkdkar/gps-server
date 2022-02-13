@@ -13,6 +13,7 @@ import myutils as utils
 from viewModel.mViewModels import Settingg
 from viewModel.tokenVm import  Token
 from viewModel.userVM import   User
+from viewModel.productsVM import  product as ProductVm
 from hashlab import AESCipher
 #import hashlib as hasher
 import pandas as pd
@@ -162,7 +163,36 @@ def signInWithUserPass():
   if user is None or token is None:
     return  f"""{{status:401,userInfo:"",token:""}}""".strip("\n")
 
-  return  f"""{{"status":"200","userInfo":{str(user.userJsonString )},"token":"{str(token.tokenString).strip()}"}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
+  return  f"""{{"status":"200","userInfo":{str(user.userJsonString )},"token":"{str(token.tokenString).strip()}"}}""".strip("\n")
+
+
+
+@app.route("/ModifyProduct",methods=["POST"])
+def ModifyProduct():
+  token =request.args.get("token",default="",type=str)
+  productKson =request.args.get("productJson",default="",type=str)
+
+  if token == "" or token =="":
+    return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
+  
+  print("@@@@@@@@@@@\n")
+  jdata = json.loads(productKson)
+  for d in jdata:
+    print(d)
+    product = ProductVm(d['pid'],str (d['pname']),d['pOwnerMobile'],d['pOwnerPID'],d['pMobile'],d['ptype'],d['pimage'],d['mimiSerial'],d['pcreateDate'],d['pUpdateDate'],d['installerCode'])
+    print(product.toJSON)
+    json.dumps(product.__dict__,ensure_ascii=True)
+    # for key,value in enumerate(d):
+    #       print(d[value])
+    dbEntity().saveProduct(product=product)
+
+  return "True"
+  
+  #return  f"""{{"status":"200","userInfo":{str(user.userJsonString )},"token":"{str(token.tokenString).strip()}"}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
+
+
+
+
 
 
 # if __name__ == "__main__":
