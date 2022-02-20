@@ -1,21 +1,20 @@
 
-from flask.json import jsonify
-import pandas as pd
-import dBRepository as db
-import json
 import datetime
+import json
 
-
+import dBRepository as db
+import pandas as pd
+from flask.json import jsonify
 
 
 class User:
     
 
-    def __init__(self,userName=None,password=None,name=None,lastName=None,createdDateTime=None,email=None,personelID=None,id=None):
+    def __init__(self,userName=None,password="",name=None,lastName=None,createdDateTime=None,email=None,personelID=None,id=None):
         self.id = id or 0  ,
         self.personelID = personelID,
         self.userName = userName,
-        self.password=password,
+        self.password: str =password,
         self.name =name,
         self.lastName = lastName,
         self.createdDateTime = createdDateTime,
@@ -26,8 +25,8 @@ class User:
 
     def GetUserFromDbByUserName(self,username):
         cnxcc = db.dbEntity().cnxn
-        data = pd.read_sql_query("""select distinct u.id,u.personelID,u.userName,u.email,p.DisplayName,p.Name ,p.LastName,p.createdDateTime from sec.[users]  as u join sec.personel as p on u.personelID = p.id where userName = '{username}' """.format(username = int(username)),cnxcc)
-        print(data)
+        data = pd.read_sql_query("""select distinct u.id,u.personelID,u.userName,u.email,p.DisplayName,p.Name,u.[password] ,p.LastName,p.createdDateTime from sec.[users]  as u join sec.personel as p on u.personelID = p.id where userName = '{username}' """.format(username = int(username)),cnxcc)
+        if data.empty == True :return None
         dt_string = "2020-12-18 3:11:09" 
         format = "%Y-%m-%d %H:%M:%S"
         # for index,row in data.iterrows():
@@ -53,14 +52,22 @@ class User:
         self.createdDateTime =str( datetime.datetime.strptime(str( df.iloc[0].createdDateTime)[0:19], format)), #df.iloc[0].createdDateTime,
         self.email = str(df.iloc[0].email or None)
 
+        self.password =self.password[0] 
+        self.lastName =self.lastName[0] 
+        self.createdDateTime =self.createdDateTime[0] 
+
+
 
 
         return self
     
-    def saveDB(self,cursor):
+    def saveDB(self,dbEntity):
+      try:  
+        cursor = dbEntity.cursor
         username = self.userName[0]
         name = self.name[0] or 'unname'
         lastName = self.lastName[0] or 'unlastname'
+        password  = self.password[0] or '123456'
         displayName=name+' '+lastName
         query = """set nocount on; if not exists (select 1 from sec.users where userName='{usernamearg}' ) 
                             insert into sec.personel([Name],[LastName],[DisplayName]) 
@@ -72,17 +79,21 @@ class User:
 
         if id is not None or 0:
             query = """insert into sec.users(personelID,userName,[password],email) values
-                            ({personelID},{userName},{password},{email})""".format(personelID = id,userName=username,password =self.password,email=self.email or 'NULL')
+                            ({personelID},{userName},{password},{email})""".format(personelID = id,userName=username,password =password,email=self.email or 'NULL')
             print(query)
             cursor.execute(query)
             # cursor.execute("SELECT @@IDENTITY AS ID;")
             # userid =  cursor.fetchone()[0]               
                            
         cursor.commit()
-        
+        dbEntity.cnxn.close()
         print(id)
          
         return id
+      except:
+        dbEntity.cnxn.close()
+        return None
+        
 
     @property
     def userJsonString(self):

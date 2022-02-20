@@ -6,12 +6,14 @@ import io
 from flask_cors import CORS
 # from mViewModels import Settingg, User
 import json
+from matplotlib.style import use
 import pyodbc
 from dBRepository import dbEntity 
 import myutils as utils
 from viewModel.mViewModels import Settingg
 from viewModel.tokenVm import  Token
 from viewModel.userVM import   User
+from viewModel.productsVM import  product as ProductVm
 from hashlab import AESCipher
 #import hashlib as hasher
 import pandas as pd
@@ -101,6 +103,26 @@ def validationSMS():
 
 
 
+@app.route("/signUPWithCrential",methods=["POST"])
+def signUPWithCrential():
+  crential =request.args.get("crential",default="0",type=str)
+  #password =request.args.get("password",default="0",type=str)
+
+  if crential == "0" :
+    return "{status:invalid requst !}"
+  #ss = AESCipher("662ede816988e58fb6d057d9d85605e0").encrypt("ali")
+  dd = AESCipher(constes.CryptionKey).decrypt(crential.replace(" ","+"))
+  u = Token().fillByJson(jsonData=dd)
+  newUser=User().GetUserFromDbByUserName(username= u.userName)
+  personID = None 
+  if newUser is None or newUser.id is None:
+    user = User(u.userName,u.password ,u.Display,"",None,"",123,None)
+    personID= db.signUpMember(userp=user)
+    #todo : Create Token For this user and retrun
+  db.SaveToken(PersonelID=personID or newUser.personelID or user.personelID,token= u.tokenString)
+  return  f"""{{"status":"200","userInfo":{str(newUser.userJsonString or user.userJsonString)},"token":"{str(u.tokenString).strip()}"}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
+
+
 @app.route("/signInWithCrential",methods=["POST"])
 def signInWithCrential():
   crential =request.args.get("crential",default="0",type=str)
@@ -109,19 +131,16 @@ def signInWithCrential():
   if crential == "0" :
     return "{status:invalid requst !}"
   #ss = AESCipher("662ede816988e58fb6d057d9d85605e0").encrypt("ali")
-  dd = AESCipher(constes.CryptionKey).decrypt(crential)
-  u = Token(jsonData=dd)
+  dd = AESCipher(constes.CryptionKey).decrypt(crential.replace(" ","+"))
+  u = Token().fillByJson(jsonData=dd)
   newUser=User().GetUserFromDbByUserName(username= u.userName)
-  personID = None 
   if newUser.id is None:
-    user = User(u.userName,u.password ,u.Display,"",None,"",123,None)
-    personID= db.signUpMember(userp=user)
+    #user = User(u.userName,u.password ,u.Display,"",None,"",123,None)
+    # personID= db.signUpMember(userp=user)
+    return  f"""{{status:401,userInfo:"",token:""}}""".strip("\n")
     #todo : Create Token For this user and retrun
-  db.SaveToken(PersonelID=personID or newUser.personelID or user.personelID,token= u.tokenString)
-  
-  
-  
-  return  f"""{{"status":"200","userInfo":{str(newUser.userJsonString or user.userJsonString)},"token":"{str(u.tokenString).strip()}"}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
+  db.SaveToken(newUser.personelID,token= u.tokenString)
+  return  f"""{{"status":"200","userInfo":{str(newUser.userJsonString)},"token":"{str(u.tokenString).strip()}"}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
 
 
 def checktokenToken(token):
@@ -132,33 +151,65 @@ def checktokenToken(token):
   
 
 
+@app.route("/signInWithUserPass",methods=["POST"])
+def signInWithUserPass():
+  username =request.args.get("username",default="",type=str)
+  password =request.args.get("password",default="",type=str)
+
+  if username == "" or password =="":
+    return  f"""{{status:400,userInfo:"",token:""}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
+  
+  user, token  = db.signInWithPassword(username,password)
+  if user is None or token is None:
+    return  f"""{{status:401,userInfo:"",token:""}}""".strip("\n")
+
+  return  f"""{{"status":"200","userInfo":{str(user.userJsonString )},"token":"{str(token.tokenString).strip()}"}}""".strip("\n")
 
 
-# def Login(mobile,Password,token):
-#   if mobile =="" :
-#     return "invalid Requst!"
-#   if Password =="":
-#     code  = utils.createvalidationCode()
-#     utils.sendSms(mobile,code)
-#     return code ##todo : encript code
 
-#   #todo : check username and password to DB
-#   token = utils.createToken()
-#   return token
+@app.route("/ModifyProduct",methods=["POST"])
+def ModifyProduct():
+  token =request.args.get("token",default="",type=str)
+  productKson =request.args.get("productJson",default="",type=str)
+
+  if token == "" or token =="":
+    return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
+  
+  print("@@@@@@@@@@@\n")
+  jdata = json.loads(productKson)
+  for d in jdata:
+    print(d)
+    product = ProductVm(d['pid'],str (d['pname']),d['pOwnerMobile'],d['pOwnerPID'],d['pMobile'],d['ptype'],d['pimage'],d['mimiSerial'],d['pcreateDate'],d['pUpdateDate'],d['installerCode'])
+    print(product.toJSON)
+    json.dumps(product.__dict__,ensure_ascii=True)
+    # for key,value in enumerate(d):
+    #       print(d[value])
+    dbEntity().saveProduct(product=product)
+
+  return   f"""{{status:200,msg:"products Added Success"}}""".strip("\n")
+  
+  #return  f"""{{"status":"200","userInfo":{str(user.userJsonString )},"token":"{str(token.tokenString).strip()}"}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
 
 
 
-# #api
-# def forgetPassword(mobile):
-#     code = utils.createvalidationCode()
-#     utils.sendSms(mobile,code)
-#     return code #encript code first
 
-# #api
-# def cheangePassword(mobile,newPassword):
-#     #todo : change password on db
+@app.route("/getOwnerProducts",methods=["POST"])
+def getOwnerProducts():
+  token =request.args.get("token",default="",type=str)
+  
+  if token == "" or token =="":
+    return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
+  
+  if Token().checkToken(token=token) == True:
+    tokenobj =  Token().create(token)
+    productList = db.getProductsByOwner(tokenobj.id)
 
-#     return True
+    #json_string = json.dumps(productList, indent=4, sort_keys=True, default=str)
+    json_string = json.dumps([ob.__dict__ for ob in productList], indent=4, sort_keys=True, default=str,ensure_ascii=False)
+
+
+  
+  return """{{status:200,msg:"query Success",payload:{json_string}}}""".format(json_string = json_string) 
 
 
 # if __name__ == "__main__":
