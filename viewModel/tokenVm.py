@@ -1,3 +1,4 @@
+from ast import Bytes
 import base64
 from datetime import time,datetime
 import json
@@ -24,24 +25,42 @@ class Token:
         self.Display = j['Display']
         self.isAuth = j['IsVakidated']
         self.CreationDate =str( datetime.now())
-        self.password = j['IsVakidated']
+        self.password = j['password']
         return self
     
     @property
     def tokenString(self):
-        header =str(base64.encodestring( bytes("{alg: RS256,typ: JWT}".encode())).decode()).strip("\n")
-        PayLoad=str(base64.encodestring(bytes( str(self.toJSON()).encode())).decode()).strip("\n")
-        signiture =str(base64.encodestring( AESCipher(constes.CryptionKey).encrypt(header+"."+PayLoad)).decode()).strip("\n")
-        return header.strip("\n")+"."+PayLoad.strip("\n")+"."+signiture.strip("\n")
+        header =str(base64.encodestring( bytes("{alg: RS256,typ: JWT}".encode())).decode()).replace('\n','').replace('\\n','')
+        PayLoad=str(base64.encodestring(bytes( str(self.toJSON()).encode())).decode()).replace('\n','').replace('\\n','')
+        signiture =str(base64.encodestring( AESCipher(constes.CryptionKey).encrypt(header+"."+PayLoad)).decode()).replace('\n','').replace('\\n','')
+        return header.replace('\n','').replace('\\n','')+"."+PayLoad.replace('\n','').replace('\\n','')+"."+signiture.replace('\n','').replace('\\n','')
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
     
-    def checkToken(token):
+    def checkToken(self,token):
         
         header,pyload,signiture = str(token).split('.')
-        nowSignuture =str( AESCipher(constes.CryptionKey).encrypt(header+"."+pyload))
-        if nowSignuture.replace('+',' ') == signiture:
+        nowSignuture =str(base64.encodestring( AESCipher(constes.CryptionKey).encrypt(header+"."+pyload)).decode()).strip("\n").replace('\n','').replace('\\n','')
+        if nowSignuture ==  signiture.replace('\n','').replace('\\n',''):
+            
             return True
         return False
+
+    def create(self,token):
+        
+        header,pyload,signiture = str(token).split('.')
+        
+        dd =base64.b64decode(pyload).decode()
+            
+        j = json.loads(dd)
+        self.userName=j['userName']
+        self.id = j['id']
+        self.Display = j['Display']
+        self.isAuth = j['isAuth']
+        self.CreationDate = j['CreationDate']
+        #self.password = j['password']
+        return self
+        
+    

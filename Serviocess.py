@@ -115,7 +115,7 @@ def signUPWithCrential():
   u = Token().fillByJson(jsonData=dd)
   newUser=User().GetUserFromDbByUserName(username= u.userName)
   personID = None 
-  if newUser.id is None:
+  if newUser is None or newUser.id is None:
     user = User(u.userName,u.password ,u.Display,"",None,"",123,None)
     personID= db.signUpMember(userp=user)
     #todo : Create Token For this user and retrun
@@ -186,13 +186,30 @@ def ModifyProduct():
     #       print(d[value])
     dbEntity().saveProduct(product=product)
 
-  return "True"
+  return   f"""{{status:200,msg:"products Added Success"}}""".strip("\n")
   
   #return  f"""{{"status":"200","userInfo":{str(user.userJsonString )},"token":"{str(token.tokenString).strip()}"}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
 
 
 
 
+@app.route("/getOwnerProducts",methods=["POST"])
+def getOwnerProducts():
+  token =request.args.get("token",default="",type=str)
+  
+  if token == "" or token =="":
+    return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
+  
+  if Token().checkToken(token=token) == True:
+    tokenobj =  Token().create(token)
+    productList = db.getProductsByOwner(tokenobj.id)
+
+    #json_string = json.dumps(productList, indent=4, sort_keys=True, default=str)
+    json_string = json.dumps([ob.__dict__ for ob in productList], indent=4, sort_keys=True, default=str,ensure_ascii=False)
+
+
+  
+  return """{{status:200,msg:"query Success",payload:{json_string}}}""".format(json_string = json_string) 
 
 
 # if __name__ == "__main__":

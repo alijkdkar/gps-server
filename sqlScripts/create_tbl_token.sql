@@ -185,3 +185,18 @@ END try
 begin catch
 select 1 as ID,100 as  'Message' 
 end catch
+
+
+exec [pro].[uspModifyProduct] N'{
+"pid": 2,
+"pname": "تست 2",
+"pOwnerPID": 1,
+"pownerMobile": "9132120833",
+"pMobile": "9132120832",
+"ptype": 1,
+"pimage": "",
+"mimiSerial": "asd12345asda456a5s4das6d54ad456as4d5a4sd65asd",
+"pcreateDate": "2022-02-12T21:52:20.583",
+"pUpdateDate": null,
+"installerCode": "0"
+}'
