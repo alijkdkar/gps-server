@@ -1,4 +1,6 @@
 
+from ast import Str
+from asyncio.windows_events import NULL
 from typing import Hashable, List, Text
 from flask import Flask , request, jsonify
 import base64
@@ -171,22 +173,38 @@ def signInWithUserPass():
 def ModifyProduct():
   token =request.args.get("token",default="",type=str)
   productKson =request.args.get("productJson",default="",type=str)
-
+  pImage =request.args.get("pImage",default="",type=Str)
   if token == "" or token =="":
     return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
   
+  imageAddress=""
+  
+  filename = saveImageinDirectory(pImage)
+  # if pImage is not NULL:
+    # with open(r"assets\uplaodedImages\imageToSave.png", "wb") as fh:
+    #    fh.write(base64.b64decode (pImage))
+    # imageAddress = r"assets\uplaodedImages\imageToSave.png"
+
   print("@@@@@@@@@@@\n")
-  jdata = json.loads(productKson)
-  for d in jdata:
-    print(d)
-    product = ProductVm(d['pid'],str (d['pname']),d['pOwnerMobile'],d['pOwnerPID'],d['pMobile'],d['ptype'],d['pimage'],d['mimiSerial'],d['pcreateDate'],d['pUpdateDate'],d['installerCode'])
-    print(product.toJSON)
-    json.dumps(product.__dict__,ensure_ascii=True)
+  d = json.loads(productKson)
+  # for d in jdata:
+    # product = ProductVm(d['pid'],str (d['pname']),d['pOwnerMobile'],d['pOwnerPID'],d['pMobile'],d['ptype'],d['pimage'],d['mimiSerial'],d['pcreateDate'],d['pUpdateDate'],d['installerCode'])
+  product = ProductVm(d['pid'],str (d['pname']),d['pownerMobile'],d['pOwnerPID'],d['pMobile'],d['ptype'],filename,d['mimiSerial'],d['pcreateDate'],d['pUpdateDate'],d['installerCode'])
+  json.dumps(product.__dict__,ensure_ascii=True)
     # for key,value in enumerate(d):
     #       print(d[value])
-    dbEntity().saveProduct(product=product)
+  dbEntity().saveProduct(product=product)
 
   return   f"""{{status:200,msg:"products Added Success"}}""".strip("\n")
+
+def saveImageinDirectory(pImage):
+    pImage1= pImage.value.replace(' ','+')
+    imgdata = base64.b64decode(pImage1)
+    picname=Str(datetime.now().strftime("%H%M%S"))
+    filename = r'assets\uplaodedImages\{fileName}.png'.format(fileName=picname.value)  
+    with open(filename, 'wb') as f:
+      f.write(imgdata)
+    return filename
   
   #return  f"""{{"status":"200","userInfo":{str(user.userJsonString )},"token":"{str(token.tokenString).strip()}"}}""".strip("\n")#.format(oken={str(u.tokenString)}) 
 
@@ -212,7 +230,43 @@ def getOwnerProducts():
   return """{{status:200,msg:"query Success",payload:{json_string}}}""".format(json_string = json_string) 
 
 
+
+
+@app.route("/getLocations",methods=["POST"])
+def getLocations():
+  token =request.args.get("token",default="",type=str)
+  
+  if token == "" or token =="":
+    return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
+  
+  if Token().checkToken(token=token) == True:
+    tokenobj =  Token().create(token)
+
+  productList = db.getProductsByOwner(tokenobj.id)
+  locs = db.getProductsHisLoc(OwnerID=tokenobj.id)
+  totalstring ="["
+  
+  for x in productList:
+    #for y in filter(lambda z: z.ProductID==x.pid ,locs):
+    jsstring= json.dumps(x.__dict__, indent=4, sort_keys=True, default=str,ensure_ascii=False)
+    ll = loctionJsonString = json.dumps([ob.__dict__ for ob in filter(lambda z: z.ProductID==x.pid ,locs)], indent=4, sort_keys=True, default=str,ensure_ascii=False)
+    jsstring= jsstring.replace('"BBLLoCEDA"',ll)
+    totalstring+=(jsstring+",")
+    #json.dumps([ob.__dict__ for ob in locs], indent=4, sort_keys=True, default=str,ensure_ascii=False)
+        #jsstring += json.dumps(y.__dict__, indent=4, sort_keys=True, default=str,ensure_ascii=False)
+  if len(totalstring)>1:
+    totalstring = totalstring[:-1]
+  totalstring += "]"
+  
+  # productJsonString = json.dumps([ob.__dict__ for ob in productList], indent=4, sort_keys=True, default=str,ensure_ascii=False)
+  
+
+  return """{{status:200,msg:"query Success",payload:{json_string}}}""".format(json_string =totalstring) 
+  #return """{{status:200,msg:"query Success",payload:{json_string}}}""".format(json_string ="{products:"+ productJsonString +",locations:"+ loctionJsonString+"}") 
+
+
+
 # if __name__ == "__main__":
 #     app.run(debug=True)
 if __name__ == '__main__':
-    app.run(host='192.168.1.107', port=5000, debug=True, threaded=False)
+  app.run(host='192.168.1.110', port=5000, debug=True, threaded=False)

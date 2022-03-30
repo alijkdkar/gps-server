@@ -1,16 +1,20 @@
+from asyncio.windows_events import NULL
+from datetime import datetime
+from lib2to3.pgen2.token import EQUAL
 from math import fabs
 from re import X
 from unicodedata import name
+from xmlrpc.client import DateTime
 from matplotlib.style import use
 import numpy as np
 import pyodbc 
 import pandas as pd
-from  viewModel.productsVM import product as proc
+from  viewModel.productsVM import locpoint, product as proc
 
 from viewModel.mViewModels import Settingg
 from viewModel.userVM import User
 from viewModel.tokenVm import Token
-
+from dateutil.relativedelta import *
 
 
 # connection to db
@@ -22,7 +26,9 @@ class dbEntity:
         self.password = '123456789' 
         self.cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+self.server+';DATABASE='+self.database+';UID='+self.username+';PWD='+ self.password)
         self.cursor = self.cnxn.cursor()
-        
+
+
+      
 
     def getSetting(self,customerID):
         #self.cursor.execute('select * from settings')
@@ -72,7 +78,7 @@ class dbEntity:
     def saveProduct(self,product):
         """Modify product create and update"""
         try:
-            query1 = "exec [pro].[uspModifyProduct] '{product}'".format(product=product.toJSON)
+            query1 = "exec [pro].[uspModifyProduct] @jsonProductInput = N'{product}'".format(product=product.toJSON)
             self.cursor.execute(query1)
             self.cursor.commit()
         except Exception as X:
@@ -84,7 +90,7 @@ class dbEntity:
     def getProductBy(self,pid=None,pname=None):
         """ for get information about prodoucts by id that you must now :))"""
         if pid !=None:
-            qury = f"select pid,pname,pOwnerMobile,pOwnerPID,pMobile,ptype,pimage,mimiSerial,pcreateDate,pUpdateDate,installerCode from pro.tblProducts where pid = {id}".format(id=pid)
+            qury = f"select pid,pname,pOwnerMobile,pOwnerPID,pMobile,ptype,pimage,mimiSerial,pcreateDate,pUpdateDate,installerCode from pro.tblProducts as tp join sec.users as u on tp.pOwnerPID=u.personelID where u.id = {id}".format(id=pid)
         elif pname !=None:
             qury = f"select pid,pname,pOwnerMobile,pOwnerPID,pMobile,ptype,pimage,mimiSerial,pcreateDate,pUpdateDate,installerCode  from pro.tblProducts where pname like N'%{name}%'".format(name=pname)
 
@@ -97,7 +103,7 @@ class dbEntity:
     def getProductsByOwner(self,ownerID):
         """get all Product of Online User that is avalable"""
         
-        qury = "select pid,pname,pOwnerMobile,pOwnerPID,pMobile,ptype,pimage,mimiSerial,pcreateDate,pUpdateDate,installerCode from pro.tblProducts where pOwnerPID = {id}".format(id=ownerID)
+        qury = "select pid,pname,pOwnerMobile,pOwnerPID,pMobile,ptype,pimage,mimiSerial,pcreateDate,pUpdateDate,installerCode from pro.tblProducts as tp  where tp.pOwnerPID = {id}".format(id=ownerID)
 
         # df =  pd.read_sql_query(qury,self.cnxn)
         # for r in  df.iterrows():
@@ -114,3 +120,31 @@ class dbEntity:
             
         
         return res
+
+
+    def getProductsHisLoc(self,ProductID=NULL,OwnerID=NULL,StartDateTime='',EndDateTime=datetime.now().strftime("%Y-%m-%d %H:%M:%S")):
+        """get products location"""
+        if StartDateTime == '':
+            StartDateTime =datetime.now() + relativedelta(months=-1)
+            StartDateTime = StartDateTime.strftime("%Y-%m-%d %H:%M:%S")
+        #StartDateTime = StartDateTime + relativedelta(months=-1)
+        
+        qury = "exec pro.uspGetLocations  @productID={pID}, @ownerUserId = {owner},@sDate= '{SD}',@eDate='{ED}'".format(pID=ProductID,owner=OwnerID,SD=StartDateTime,ED=EndDateTime)
+
+        print (qury)
+        res = []
+        self.cursor.execute(qury) 
+        # self.cursor.commit()
+        row = self.cursor.fetchone() 
+        while row: 
+            p =  locpoint(row[0],row[1],row[2],row[3],row[4],row[5])
+            res.append(p)
+            
+
+            row = self.cursor.fetchone()
+            
+        
+        return res
+
+
+
