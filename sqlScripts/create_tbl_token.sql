@@ -124,6 +124,8 @@ CREATE TABLE [pro].[tblProducts](
 	[pcreateDate] [datetime] default GetDate(),
 	[pUpdateDate] [datetime] NULL,
 	[installerCode] [nvarchar](20) NULL,
+   [expireDate] [datetime] default GetDate(),
+   [isActive] [BIT] default 1,
  CONSTRAINT [PK_tblProducts] PRIMARY KEY CLUSTERED 
 (
 	[pid] ASC
@@ -132,7 +134,86 @@ CREATE TABLE [pro].[tblProducts](
 
 END;
 
+IF NOT EXISTS (SELECT 1  FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'pro' AND TABLE_NAME = 'lochis')
+   BEGIN
+      CREATE TABLE pro.lochis(
+         lhid INT IDENTITY(1,1),
+         ProductID int not null,
+		 AddressName nvarchar(300),
+         [DateTime] Datetime default getdate(),
+		 IsDeleted bit default 0,
+		 Longitude DECIMAL(12,9),
+		 latitude DECIMAL(12,9)
+         )
+   END;
+GO
+insert into pro.lochis (ProductID,Longitude, latitude)
+values(1,51.652395,32.625721),(1,51.652326,32.625347),(1,51.651891,32.625363),(1,51.651416,32.625340)
+,(1,51.642125,32.625149),(1,51.642159,32.625629)
 
+select * from pro.lochis
+go
+
+     IF NOT EXISTS (SELECT 1  FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'pro' AND TABLE_NAME = 'services')
+   BEGIN
+      CREATE TABLE pro.[services](
+         servid INT IDENTITY (1,1),
+         [serviceName] nvarchar(100),
+         [DateTime] Datetime default getdate(),
+		 [updateTime] Datetime default getdate(),
+		 IsDeleted bit default 0,
+		 isSystem bit default 1,
+		 
+         )
+   END;
+
+go
+
+IF NOT EXISTS (SELECT 1  FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'pro' AND TABLE_NAME = 'servicesDetail')
+   BEGIN
+      CREATE TABLE pro.[servicesDetail](
+         sdId INT IDENTITY (1,1),
+         [serviceId] int not null,
+		 [ProductId] int not null,
+         [DateTime] Datetime default getdate(),
+		 [updateTime] Datetime default getdate(),
+		 IsDeleted bit default 0,
+		 maxValue int default 0,
+		 [value] int default 0,
+		 periodCounter int default 0
+         )
+   END;
+
+
+    GO
+    IF NOT EXISTS (SELECT 1  FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'pro' AND TABLE_NAME = 'ownerServices')
+   BEGIN
+      CREATE TABLE pro.[ownerServices](
+         oservid INT IDENTITY (1,1),
+         [serviceName] nvarchar(100),
+         [DateTime] Datetime default getdate(),
+		 [updateTime] Datetime default getdate(),
+		 IsDeleted bit default 0,
+		 [ownerID] int not null
+         )
+   END;
+
+go
+
+IF NOT EXISTS (SELECT 1  FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'pro' AND TABLE_NAME = 'ownerServicesDetail')
+   BEGIN
+      CREATE TABLE pro.[ownerServicesDetail](
+         osdId INT IDENTITY (1,1),
+         [serviceId] int not null,
+		 [ProductId] int not null,
+         [DateTime] Datetime default getdate(),
+		 [updateTime] Datetime default getdate(),
+		 IsDeleted bit default 0,
+		 maxValue int default 0,
+		 [value] int default 0,
+		 periodCounter int default 0
+         )
+   END;
 
 
 
@@ -200,3 +281,65 @@ exec [pro].[uspModifyProduct] N'{
 "pUpdateDate": null,
 "installerCode": "0"
 }'
+
+GO
+
+create  proc pro.uspGetLocations
+@productID int=0,
+@ownerUserID int = 0,
+@sDate datetime =null,
+@eDate Datetime =null
+as 
+SET NOCOUNT ON
+declare @sqlStr nvarchar(max)='',@wereStr nvarchar(200)=''
+
+--select Create
+select @sqlStr +='select lh.lhid,lh.ProductID,lh.AddressName,lh.DateTime,lh.Longitude,lh.latitude 
+from pro.tblProducts as p 
+left join  pro.lochis as lh on p.pid=lh.ProductID 
+where 1=1 and lh.IsDeleted<>1 and p.isActive = 1'
+
+
+
+if (@ownerUserID<>0)
+select @wereStr += ' and p.pOwnerPID = '+cast(@ownerUserID as nvarchar)
+
+if (@productID<>0)
+select @wereStr += ' and p.pid = '+cast(@productID as nvarchar)
+
+if @sDate is not null 
+select @wereStr += ' and lh.DateTime > ' +''''+convert (nvarchar, @sdate )+''''
+
+if @eDate is not null 
+select @wereStr += ' and lh.DateTime <' +''''+convert (nvarchar, @eDate )+''''
+
+select @sqlStr+=@wereStr
+print @sqlstr
+
+EXECUTE sp_executesql @sqlStr
+
+
+go 
+
+declare @sdate dateTime=(select DATEADD(MONTH,-1, GETDATE() ))
+declare @edate dateTime=(select DATEADD(MONTH,1, GETDATE() ))
+exec pro.uspGetLocations @productID=1,@sDate= @sdate,@eDate=@edate
+
+go
+
+declare @sdate dateTime=(select DATEADD(MONTH,-1, GETDATE() ))
+declare @edate dateTime=(select DATEADD(MONTH,1, GETDATE() ))
+exec pro.uspGetLocations @ownerUserId = 1,@sDate= @sdate,@eDate=@edate
+
+
+go
+
+declare @sdate dateTime=(select DATEADD(MONTH,-1, GETDATE() ))
+exec pro.uspGetLocations @ownerUserId = 1,@sDate= @sdate
+
+go 
+
+
+
+declare @edate dateTime=(select DATEADD(MONTH,1, GETDATE() ))
+exec pro.uspGetLocations @ownerUserId = 1,@sDate= null,@eDate=@edate
