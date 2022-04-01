@@ -236,7 +236,7 @@ def getOwnerProducts():
 @app.route("/getLocations",methods=["POST"])
 def getLocations():
   token =request.args.get("token",default="",type=str)
-  productID =request.args.get("productID",default="",type=int)
+  productID =request.args.get("productID",default=None,type=int)
   
   if token == "" or token =="":
     return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")

@@ -131,7 +131,7 @@ class dbEntity:
             StartDateTime = StartDateTime.strftime("%Y-%m-%d %H:%M:%S")
         #StartDateTime = StartDateTime + relativedelta(months=-1)
         
-        qury = "exec pro.uspGetLocations  @productID={pID}, @ownerUserId = {owner},@sDate= '{SD}',@eDate='{ED}'".format(pID=ProductID,owner=OwnerID,SD=StartDateTime,ED=EndDateTime)
+        qury = "exec pro.uspGetLocations  @productID={pID}, @ownerUserId = {owner},@sDate= '{SD}',@eDate='{ED}'".format(pID=ProductID or "Default",owner=OwnerID,SD=StartDateTime,ED=EndDateTime)
 
         print (qury)
         res = []
