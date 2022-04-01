@@ -214,13 +214,14 @@ def saveImageinDirectory(pImage):
 @app.route("/getOwnerProducts",methods=["POST"])
 def getOwnerProducts():
   token =request.args.get("token",default="",type=str)
-  
+  productID =request.args.get("productID",default=None,type=int)
+
   if token == "" or token =="":
     return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
   
   if Token().checkToken(token=token) == True:
     tokenobj =  Token().create(token)
-    productList = db.getProductsByOwner(tokenobj.id)
+    productList = db.getProducts(tokenobj.id,productID or None)
 
     #json_string = json.dumps(productList, indent=4, sort_keys=True, default=str)
     json_string = json.dumps([ob.__dict__ for ob in productList], indent=4, sort_keys=True, default=str,ensure_ascii=False)
@@ -235,6 +236,7 @@ def getOwnerProducts():
 @app.route("/getLocations",methods=["POST"])
 def getLocations():
   token =request.args.get("token",default="",type=str)
+  productID =request.args.get("productID",default="",type=int)
   
   if token == "" or token =="":
     return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
@@ -242,8 +244,8 @@ def getLocations():
   if Token().checkToken(token=token) == True:
     tokenobj =  Token().create(token)
 
-  productList = db.getProductsByOwner(tokenobj.id)
-  locs = db.getProductsHisLoc(OwnerID=tokenobj.id)
+  productList = db.getProducts(tokenobj.id,productID or None)
+  locs = db.getProductsHisLoc(OwnerID=tokenobj.id,ProductID=productID or None)
   totalstring ="["
   
   for x in productList:
