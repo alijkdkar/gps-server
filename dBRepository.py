@@ -100,10 +100,12 @@ class dbEntity:
         return res
         
     
-    def getProductsByOwner(self,ownerID):
+    def getProducts(self,ownerID,ProductID):
         """get all Product of Online User that is avalable"""
-        
-        qury = "select pid,pname,pOwnerMobile,pOwnerPID,pMobile,ptype,pimage,mimiSerial,pcreateDate,pUpdateDate,installerCode from pro.tblProducts as tp  where tp.pOwnerPID = {id}".format(id=ownerID)
+        if ProductID == 0 or ProductID == None:
+            qury = "select pid,pname,pOwnerMobile,pOwnerPID,pMobile,ptype,pimage,mimiSerial,CAST( pcreateDate as smalldatetime),cast(pUpdateDate as smalldatetime),installerCode from pro.tblProducts as tp where tp.pOwnerPID = {ownerID}".format(ownerID=ownerID)
+        elif ownerID != 0 and (ProductID != 0 or ProductID != None):
+            qury = "select  pid,pname,pOwnerMobile,pOwnerPID,pMobile,ptype,pimage,mimiSerial,CAST( pcreateDate as smalldatetime),cast(pUpdateDate as smalldatetime),installerCode from pro.tblProducts as tp where tp.pOwnerPID = {ownerID} and tp.pid ={pid}".format(ownerID=ownerID,pid=ProductID)
 
         # df =  pd.read_sql_query(qury,self.cnxn)
         # for r in  df.iterrows():
@@ -129,7 +131,7 @@ class dbEntity:
             StartDateTime = StartDateTime.strftime("%Y-%m-%d %H:%M:%S")
         #StartDateTime = StartDateTime + relativedelta(months=-1)
         
-        qury = "exec pro.uspGetLocations  @productID={pID}, @ownerUserId = {owner},@sDate= '{SD}',@eDate='{ED}'".format(pID=ProductID,owner=OwnerID,SD=StartDateTime,ED=EndDateTime)
+        qury = "exec pro.uspGetLocations  @productID={pID}, @ownerUserId = {owner},@sDate= '{SD}',@eDate='{ED}'".format(pID=ProductID or "Default",owner=OwnerID,SD=StartDateTime,ED=EndDateTime)
 
         print (qury)
         res = []
