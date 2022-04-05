@@ -149,4 +149,15 @@ class dbEntity:
         return res
 
 
+    def modifyLocation(self,productID,locationJson):
+        """Modify location create and update"""
+        try:
+            query1 = "exec [pro].[uspModifyLocation] @ProductID=N'{prodID}' @jsonLocationInput = N'{location}'".format(prodID=productID,location=locationJson)
+            self.cursor.execute(query1)
+            self.cursor.commit()
+        except Exception as X:
+            print(X)
+            return False
+        
+        return True
 

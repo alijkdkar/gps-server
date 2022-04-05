@@ -343,3 +343,16 @@ go
 
 declare @edate dateTime=(select DATEADD(MONTH,1, GETDATE() ))
 exec pro.uspGetLocations @ownerUserId = 1,@sDate= null,@eDate=@edate
+
+
+
+GO
+CREATE PROCEDURE [pro].[uspModifyLocation]
+	
+	@ProductID int =null,
+	@jsonLocationInput nvarchar(max)
+
+AS
+BEGIN
+	select 1100
+END
