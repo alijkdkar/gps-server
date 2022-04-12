@@ -147,6 +147,11 @@ IF NOT EXISTS (SELECT 1  FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'pr
          )
    END;
 GO
+CREATE CLUSTERED INDEX locindexDate ON pro.lochis ([DateTime]);
+go
+CREATE  INDEX locindexid ON pro.lochis ([lhid]);
+
+go
 insert into pro.lochis (ProductID,Longitude, latitude)
 values(1,51.652395,32.625721),(1,51.652326,32.625347),(1,51.651891,32.625363),(1,51.651416,32.625340)
 ,(1,51.642125,32.625149),(1,51.642159,32.625629)
@@ -343,3 +348,16 @@ go
 
 declare @edate dateTime=(select DATEADD(MONTH,1, GETDATE() ))
 exec pro.uspGetLocations @ownerUserId = 1,@sDate= null,@eDate=@edate
+
+
+
+GO
+CREATE PROCEDURE [pro].[uspModifyLocation]
+	
+	@ProductID int =null,
+	@jsonLocationInput nvarchar(max)
+
+AS
+BEGIN
+	select 1100
+END
