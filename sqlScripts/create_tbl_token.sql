@@ -8,7 +8,7 @@ go
 use [gpsManager]
 go
 
-------------schema-----------
+------------begin schema-----------
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'sec')
 BEGIN
 EXEC('CREATE SCHEMA sec')
@@ -25,7 +25,12 @@ BEGIN
 EXEC('CREATE SCHEMA pro')
 END
 
----------------
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'pub')
+BEGIN
+EXEC('CREATE SCHEMA pub')
+END
+
+--------End SCHEMA-------
 
 
 IF NOT EXISTS (SELECT 1
@@ -353,11 +358,52 @@ exec pro.uspGetLocations @ownerUserId = 1,@sDate= null,@eDate=@edate
 
 GO
 CREATE PROCEDURE [pro].[uspModifyLocation]
+--declare
 	
 	@ProductID int =null,
-	@jsonLocationInput nvarchar(max)
+	@jsonLocationInput nvarchar(max)--=  N'[{"AddressName":"","DateTime":"1650218858000","Longitude":-18.5303879109,"ProductID":1,"latitude":65.9798958978,"lhid":0},{"AddressName":"","DateTime":"1650218953000","Longitude":51.6664299228,"ProductID":1,"latitude":32.6654061513,"lhid":0},{"AddressName":"","DateTime":"1650218959000","Longitude":51.6647583579,"ProductID":1,"latitude":32.6657120605,"lhid":0},{"AddressName":"","DateTime":"1650218964000","Longitude":51.660797476,"ProductID":1,"latitude":32.6658956055,"lhid":0}]'
 
 AS
 BEGIN
-	select 1100
+
+--insert into dbo.bblbb(pro,inp) values(@ProductID,@jsonLocationInput)
+--Create table #locations(prodID int, mLong bigint , mLatut bigint,mTime DATETIME2(3))
+
+insert into pro.lochis(ProductID,Longitude,latitude,[DateTime],AddressName)
+select distinct ProductID,Longitude,latitude,pub.ConvertUnixToDateTime([DateTime]),[AddressName] from OpenJson(@jsonLocationInput)
+with (ProductID int,
+	  Longitude float,
+	  latitude float,
+	  [DateTime] bigint,
+	  [AddressName] nvarchar(300)
+	  )
+
+
 END
+
+
+go
+--------begin function------------
+CREATE FUNCTION pub.ConvertUnixToDateTime
+(
+	-- Add the parameters for the function here
+	@unixDateTime  BIGINT
+)
+RETURNS DATETIME2(3)
+AS
+BEGIN
+Declare @Result varchar(300)
+
+
+SELECT @Result =  CAST(DATEADD(ms, CAST(RIGHT(@unixDateTime,3) AS SMALLINT), 
+DATEADD(s, @unixDateTime / 1000, '1970-01-01')) AS DATETIME2(3))
+
+
+	-- Return the result of the function
+	RETURN @Result
+
+END
+GO
+
+
+-------end function------------

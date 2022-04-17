@@ -277,7 +277,7 @@ def modifyLocation():
   
   if Token().checkToken(token=token) == True:
     tokenobj =  Token().create(token)
-  #db.modifyLocation(tokenobj.id,productID,locationJson)
+    db.modifyLocation(productID or tokenobj.id,locationJson)
   
   return f"""{{status:200,msg:"query Success",payload:[]}}"""
 
