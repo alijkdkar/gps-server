@@ -267,8 +267,8 @@ def getLocations():
   return """{{status:200,msg:"query Success",payload:{json_string}}}""".format(json_string =totalstring) 
 
 
-@app.route("/modifyLocation",methods=["PUSH"])
-def modifyLocations():
+@app.route("/modifyLocation",methods=["POST"])
+def modifyLocation():
   token =request.args.get("token",default="",type=str)
   productID =request.args.get("productID",default=None,type=int)
   locationJson =request.args.get("locationJson",default="",type=str)
@@ -277,9 +277,9 @@ def modifyLocations():
   
   if Token().checkToken(token=token) == True:
     tokenobj =  Token().create(token)
-  db.modifyLocation(tokenobj.id,productID,locationJson)
+    db.modifyLocation(productID or tokenobj.id,locationJson)
   
-  return """{{status:200,msg:"query Success"}}""".strip("\n")
+  return f"""{{status:200,msg:"query Success",payload:[]}}"""
 
 
 
