@@ -285,6 +285,6 @@ def modifyLocation():
 
 
 # if __name__ == "__main__":
-#     app.run(debug=True)
+    # app.run()
 if __name__ == '__main__':
   app.run(host='192.168.1.110', port=5000, debug=True, threaded=False)
