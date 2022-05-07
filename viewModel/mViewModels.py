@@ -46,3 +46,7 @@ class CarServiceDetailVM :
         self.maxValue :int = 0
         self.value :int =0
         self.periodCounter: int =0
+    
+    def toJson(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=4)

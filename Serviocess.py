@@ -283,6 +283,26 @@ def modifyLocation():
 
 
 
+def modifyServices(token,productID,servicesJson):
+  if token == "" or token =="":
+    return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
+  
+  if Token().checkToken(token=token) == True:
+    tokenobj =  Token().create(token)
+    db.modifyServices(productID or tokenobj.id,servicesJson)
+  
+  return f"""{{status:200,msg:"query Success",payload:[]}}"""
+
+
+@app.route("/GetServicesTitle",methods=["GET"])
+def GetServicesTitle():
+  
+  res =db.getServiceTitle()
+  resualt = json.dumps([ob.__dict__ for ob in res], indent=4, sort_keys=True, default=str,ensure_ascii=False)
+  return """{{status:200,msg:"query Success",payload:{json_string}}}""".format(json_string =resualt) 
+
+
+
 
 # if __name__ == "__main__":
     # app.run()
