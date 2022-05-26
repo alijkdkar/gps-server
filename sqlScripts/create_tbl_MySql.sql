@@ -179,6 +179,26 @@ begin
  /* SELECT JSON_EXTRACT(jsonProductInput , '$.pid','$.pname','$.pOwnerPID');*/
   /*create TEMPORARY TABLE IF NOT EXISTS pro.inputs(pid int ,pname nvarchar(300));*/
 
+
+
+
+
+  
+  update  pro.tblproducts set 
+  	pname=JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.pname'),
+	pOwnerMobile =JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.pownerMobile'), 
+	pOwnerPID=JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.pOwnerPID'),
+	pMobile=JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.pMobile'),
+	ptype=JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.ptype'),
+	pimage=JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.pimage'),
+	mimiSerial =JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.mimiSerial'),
+	pUpdateDate = GETDATE(), 
+	installerCode =JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.installerCode') 
+	from tempJson as x 
+	where x.pid = pro.tblProducts.pid 
+
+
+
 insert into pro.tblproducts ( pname, pOwnerPID, pOwnerMobile, pMobile, ptype, pimage, mimiSerial, pcreateDate, pUpdateDate, installerCode, expireDate, isActive)
 	SELECT 
 			JSON_EXTRACT(POPULATION_JSON_DATA , '$.pname') as pname,
@@ -193,7 +213,8 @@ insert into pro.tblproducts ( pname, pOwnerPID, pOwnerMobile, pMobile, ptype, pi
             JSON_EXTRACT(POPULATION_JSON_DATA , '$.installerCode') as installerCode,
             JSON_EXTRACT(POPULATION_JSON_DATA , '$.expireDate') as expireDate,
             JSON_EXTRACT(POPULATION_JSON_DATA , '$.isActive') as isActive
-	from tempJson;
+	from tempJson as t where t.pid = 0 or not exists(select 1 from pro.tblProducts as tb  where t.pid=tb.pid );
+
 
 
 END &&  
