@@ -407,3 +407,39 @@ GO
 
 
 -------end function------------
+
+
+
+create proc pro.[modifyOwnerService]
+@ownerId int 
+
+as
+
+
+
+
+go
+
+create proc pro.[uspGetServiceTitle]
+@ownerID int
+
+as
+
+select servid, serviceName, [DateTime], updateTime, IsDeleted, isSystem from pro.[services]
+
+go 
+
+create proc pro.[uspgetOnerServices]
+@ownerID int ,
+@productID int = 0
+as
+
+
+if isnull(@productID,0) = 0
+begin
+		select sdId, serviceId, ProductId, DateTime, updateTime, IsDeleted, maxValue, value, periodCounter from pro.[servicesDetail]
+end
+else
+begin 
+		select sdId, serviceId, ProductId, DateTime, updateTime, IsDeleted, maxValue, value, periodCounter from pro.[servicesDetail] where ProductId= @productID
+end

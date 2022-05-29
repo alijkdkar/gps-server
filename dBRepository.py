@@ -11,7 +11,7 @@ import pyodbc
 import pandas as pd
 from  viewModel.productsVM import locpoint, product as proc
 
-from viewModel.mViewModels import Settingg
+from viewModel.mViewModels import Settingg, CarService, CarServiceDetailVM
 from viewModel.userVM import User
 from viewModel.tokenVm import Token
 from dateutil.relativedelta import *
@@ -162,3 +162,55 @@ class dbEntity:
         
         return True
 
+
+
+
+    def modifyServices(self,productID,serviceJson):
+        """Modify location create and update"""
+        try:
+            query1 = "exec [pro].[uspModifyService] @ProductID=N'{prodID}' , @jsonServiceInput = N'{service}'".format(prodID=productID,service=serviceJson)
+            print(query1)
+            self.cursor.execute(query1)
+            self.cursor.commit()
+        except Exception as X:
+            print(X)
+            return False
+        
+        return True
+
+    def getServices(self,productID):
+        """get all Product servicsess of Online User that is avalable"""
+        qury = "select s.sid,s.sname,s.sdescription,s.sprice,s.simage,s.sCreateDate,s.sUpdateDate,s.sOwnerPID,s.sOwnerMobile,s.sMobile,s.sType,s.sStatus,s.sProductID,s.sInstallerCode from pro.tblServices as s where s.sProductID = {productID}".format(productID=productID)
+        res = []
+        self.cursor.execute(qury) 
+        row = self.cursor.fetchone() 
+        while row: 
+            p =  (row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12])    
+            res.append(p)
+            
+            row = self.cursor.fetchone()
+            
+        
+        return res
+
+
+    def getServiceTitle(self):
+        """get all Product servicsess of Online User that is avalable"""
+        qury = "select servid, serviceName, [DateTime], updateTime, IsDeleted, isSystem from pro.[services]"
+        self.cursor.execute(qury) 
+        row = self.cursor.fetchone() 
+        res = []
+        while row: 
+            p =  CarService()   
+            p.servid=row[0]
+            p.serviceName=row[1]
+            p.DateTime=row[2]
+            p.updateTime=row[3]
+            p.IsDeleted=row[4]
+            p.isSystem=row[5]
+            res.append(p)
+            
+            row = self.cursor.fetchone()
+            
+        
+        return res
