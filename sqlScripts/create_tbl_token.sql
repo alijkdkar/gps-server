@@ -173,6 +173,7 @@ go
 		 [updateTime] Datetime default getdate(),
 		 IsDeleted bit default 0,
 		 isSystem bit default 1,
+       iconUrl NVARCHAR(200)
 		 
          )
    END;

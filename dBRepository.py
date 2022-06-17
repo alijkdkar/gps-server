@@ -214,3 +214,32 @@ class dbEntity:
             
         
         return res
+
+    def getServiceDetails(self,productID):
+        """get all Product servicsess of Online User that is avalable"""
+        qury = """select sd.sdId,s.servid,s.serviceName,sd.ProductId,sd.DateTime,sd.updateTime,sd.IsDeleted,sd.maxValue,sd.value,sd.periodCounter,s.iconUrl
+                    from pro.servicesDetail as sd 
+                    join pro.[services] as s on sd.serviceId =s.servid
+                    where sd.IsDeleted <>1 and s.IsDeleted<>1 and sd.ProductId =   {productID}""".format(productID=productID)
+        res = []
+        self.cursor.execute(qury) 
+        row = self.cursor.fetchone() 
+        while row: 
+            p = CarServiceDetailVM()
+            p.sdId= row[0]
+            p.serviceId= row[1]
+            p.seviceName= row[2]
+            p.ProductId =row[3]
+            p.DateTime=row[4]
+            p.updateTime = row[5]
+            p.IsDeleted=row[6]
+            p.maxValue= row[7]
+            p.value =row[8]
+            p.periodCounter = row[9]
+            p.iconUrl =row[10]    
+            res.append(p)
+            
+            row = self.cursor.fetchone()
+            
+        
+        return res

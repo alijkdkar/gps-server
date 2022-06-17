@@ -30,6 +30,7 @@ class CarService:
         self.updateTime :datetime
         self.IsDeleted :Boolean = False
         self.isSystem :Boolean =True
+        self.iconUrl :str=""
     
     def toJson(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
@@ -39,6 +40,7 @@ class CarServiceDetailVM :
     def __init__(self):
         self.sdId :int = 0
         self.serviceId :int = 0
+        self.seviceName: str = ""
         self.ProductId :int = 0
         self.DateTime : DateTime 
         self.updateTime : DateTime 
@@ -46,7 +48,7 @@ class CarServiceDetailVM :
         self.maxValue :int = 0
         self.value :int =0
         self.periodCounter: int =0
-    
+        self.iconUrl :str=""
     def toJson(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
