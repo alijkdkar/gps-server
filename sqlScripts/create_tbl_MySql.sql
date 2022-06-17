@@ -179,6 +179,26 @@ begin
  /* SELECT JSON_EXTRACT(jsonProductInput , '$.pid','$.pname','$.pOwnerPID');*/
   /*create TEMPORARY TABLE IF NOT EXISTS pro.inputs(pid int ,pname nvarchar(300));*/
 
+
+
+
+
+  
+  update  pro.tblproducts set 
+  	pname=JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.pname'),
+	pOwnerMobile =JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.pownerMobile'), 
+	pOwnerPID=JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.pOwnerPID'),
+	pMobile=JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.pMobile'),
+	ptype=JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.ptype'),
+	pimage=JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.pimage'),
+	mimiSerial =JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.mimiSerial'),
+	pUpdateDate = GETDATE(), 
+	installerCode =JSON_EXTRACT(x.POPULATION_JSON_DATA , '$.installerCode') 
+	from tempJson as x 
+	where x.pid = pro.tblProducts.pid 
+
+
+
 insert into pro.tblproducts ( pname, pOwnerPID, pOwnerMobile, pMobile, ptype, pimage, mimiSerial, pcreateDate, pUpdateDate, installerCode, expireDate, isActive)
 	SELECT 
 			JSON_EXTRACT(POPULATION_JSON_DATA , '$.pname') as pname,
@@ -193,7 +213,8 @@ insert into pro.tblproducts ( pname, pOwnerPID, pOwnerMobile, pMobile, ptype, pi
             JSON_EXTRACT(POPULATION_JSON_DATA , '$.installerCode') as installerCode,
             JSON_EXTRACT(POPULATION_JSON_DATA , '$.expireDate') as expireDate,
             JSON_EXTRACT(POPULATION_JSON_DATA , '$.isActive') as isActive
-	from tempJson;
+	from tempJson as t where t.pid = 0 or not exists(select 1 from pro.tblProducts as tb  where t.pid=tb.pid );
+
 
 
 END &&  
@@ -214,41 +235,38 @@ DELIMITER ;
 -- }'
 
 -- GO
+DELIMITER &&
+create  proc pro.uspGetLocations(@productID int=0,@ownerUserID int = 0,@sDate datetime =null,@eDate Datetime =null)
+begin  
+SET NOCOUNT ON
+declare @sqlStr nvarchar(max)='',@wereStr nvarchar(200)=''
 
--- create  proc pro.uspGetLocations
--- @productID int=0,
--- @ownerUserID int = 0,
--- @sDate datetime =null,
--- @eDate Datetime =null
--- as 
--- SET NOCOUNT ON
--- declare @sqlStr nvarchar(max)='',@wereStr nvarchar(200)=''
-
--- --select Create
--- select @sqlStr +='select lh.lhid,lh.ProductID,lh.AddressName,lh.DateTime,lh.Longitude,lh.latitude 
--- from pro.tblProducts as p 
--- left join  pro.lochis as lh on p.pid=lh.ProductID 
--- where 1=1 and lh.IsDeleted<>1 and p.isActive = 1'
+--select Create
+select @sqlStr +='select lh.lhid,lh.ProductID,lh.AddressName,lh.DateTime,lh.Longitude,lh.latitude 
+from pro.tblProducts as p 
+left join  pro.lochis as lh on p.pid=lh.ProductID 
+where 1=1 and lh.IsDeleted<>1 and p.isActive = 1'
 
 
 
--- if (@ownerUserID<>0)
--- select @wereStr += ' and p.pOwnerPID = '+cast(@ownerUserID as nvarchar)
+if (@ownerUserID<>0)
+select @wereStr += ' and p.pOwnerPID = '+cast(@ownerUserID as nvarchar)
 
--- if (@productID<>0)
--- select @wereStr += ' and p.pid = '+cast(@productID as nvarchar)
+if (@productID<>0)
+select @wereStr += ' and p.pid = '+cast(@productID as nvarchar)
 
--- if @sDate is not null 
--- select @wereStr += ' and lh.DateTime > ' +''''+convert (nvarchar, @sdate )+''''
+if @sDate is not null 
+select @wereStr += ' and lh.DateTime > ' +''''+convert (nvarchar, @sdate )+''''
 
--- if @eDate is not null 
--- select @wereStr += ' and lh.DateTime <' +''''+convert (nvarchar, @eDate )+''''
+if @eDate is not null 
+select @wereStr += ' and lh.DateTime <' +''''+convert (nvarchar, @eDate )+''''
 
--- select @sqlStr+=@wereStr
--- print @sqlstr
+select @sqlStr+=@wereStr
+print @sqlstr
 
--- EXECUTE sp_executesql @sqlStr
-
+EXECUTE sp_executesql @sqlStr
+END &&  
+DELIMITER ;
 
 -- go 
 
@@ -278,89 +296,92 @@ DELIMITER ;
 
 
 -- GO
--- CREATE PROCEDURE [pro].[uspModifyLocation]
--- --declare
-	
--- 	@ProductID int =null,
--- 	@jsonLocationInput nvarchar(max)--=  N'[{"AddressName":"","DateTime":"1650218858000","Longitude":-18.5303879109,"ProductID":1,"latitude":65.9798958978,"lhid":0},{"AddressName":"","DateTime":"1650218953000","Longitude":51.6664299228,"ProductID":1,"latitude":32.6654061513,"lhid":0},{"AddressName":"","DateTime":"1650218959000","Longitude":51.6647583579,"ProductID":1,"latitude":32.6657120605,"lhid":0},{"AddressName":"","DateTime":"1650218964000","Longitude":51.660797476,"ProductID":1,"latitude":32.6658956055,"lhid":0}]'
+DELIMITER &&
+CREATE PROCEDURE [pro].[uspModifyLocation](@ProductID int =null,@jsonLocationInput nvarchar(max))--=  N'[{"AddressName":"","DateTime":"1650218858000","Longitude":-18.5303879109,"ProductID":1,"latitude":65.9798958978,"lhid":0},{"AddressName":"","DateTime":"1650218953000","Longitude":51.6664299228,"ProductID":1,"latitude":32.6654061513,"lhid":0},{"AddressName":"","DateTime":"1650218959000","Longitude":51.6647583579,"ProductID":1,"latitude":32.6657120605,"lhid":0},{"AddressName":"","DateTime":"1650218964000","Longitude":51.660797476,"ProductID":1,"latitude":32.6658956055,"lhid":0}]'
+BEGIN
 
--- AS
--- BEGIN
+--insert into dbo.bblbb(pro,inp) values(@ProductID,@jsonLocationInput)
+--Create table #locations(prodID int, mLong bigint , mLatut bigint,mTime DATETIME2(3))
 
--- --insert into dbo.bblbb(pro,inp) values(@ProductID,@jsonLocationInput)
--- --Create table #locations(prodID int, mLong bigint , mLatut bigint,mTime DATETIME2(3))
+insert into pro.lochis(ProductID,Longitude,latitude,[DateTime],AddressName)
+select distinct ProductID,Longitude,latitude,pub.ConvertUnixToDateTime([DateTime]),[AddressName] from OpenJson(@jsonLocationInput)
+with (ProductID int,
+	  Longitude float,
+	  latitude float,
+	  [DateTime] bigint,
+	  [AddressName] nvarchar(300)
+	  )
 
--- insert into pro.lochis(ProductID,Longitude,latitude,[DateTime],AddressName)
--- select distinct ProductID,Longitude,latitude,pub.ConvertUnixToDateTime([DateTime]),[AddressName] from OpenJson(@jsonLocationInput)
--- with (ProductID int,
--- 	  Longitude float,
--- 	  latitude float,
--- 	  [DateTime] bigint,
--- 	  [AddressName] nvarchar(300)
--- 	  )
-
-
--- END
+END &&  
+DELIMITER ;
 
 
 -- go
 -- --------begin function------------
--- CREATE FUNCTION pub.ConvertUnixToDateTime
--- (
--- 	-- Add the parameters for the function here
--- 	@unixDateTime  BIGINT
--- )
--- RETURNS DATETIME2(3)
--- AS
--- BEGIN
--- Declare @Result varchar(300)
+DELIMITER &&
+CREATE FUNCTION pub.ConvertUnixToDateTime
+(
+	-- Add the parameters for the function here
+	@unixDateTime  BIGINT
+)
+RETURNS DATETIME2(3)
+AS
+BEGIN
+Declare @Result varchar(300)
 
 
--- SELECT @Result =  CAST(DATEADD(ms, CAST(RIGHT(@unixDateTime,3) AS SMALLINT), 
--- DATEADD(s, @unixDateTime / 1000, '1970-01-01')) AS DATETIME2(3))
+SELECT @Result =  CAST(DATEADD(ms, CAST(RIGHT(@unixDateTime,3) AS SMALLINT), 
+DATEADD(s, @unixDateTime / 1000, '1970-01-01')) AS DATETIME2(3))
 
+	-- Return the result of the function
+	RETURN @Result
+END&&
+DELIMITER;
 
--- 	-- Return the result of the function
--- 	RETURN @Result
-
--- END
 -- GO
 
 
 -- -------end function------------
 
 
+DELIMITER &&
+create proc pro.[modifyOwnerService](@ownerId int) 
+begin
 
--- create proc pro.[modifyOwnerService]
--- @ownerId int 
+-- most implamation
 
--- as
-
-
-
-
--- go
-
--- create proc pro.[uspGetServiceTitle]
--- @ownerID int
-
--- as
-
--- select servid, serviceName, [DateTime], updateTime, IsDeleted, isSystem from pro.[services]
-
--- go 
-
--- create proc pro.[uspgetOnerServices]
--- @ownerID int ,
--- @productID int = 0
--- as
+end &&
+DELIMITER;
 
 
--- if isnull(@productID,0) = 0
--- begin
--- 		select sdId, serviceId, ProductId, DateTime, updateTime, IsDeleted, maxValue, value, periodCounter from pro.[servicesDetail]
--- end
--- else
--- begin 
--- 		select sdId, serviceId, ProductId, DateTime, updateTime, IsDeleted, maxValue, value, periodCounter from pro.[servicesDetail] where ProductId= @productID
--- end
+
+
+DELIMITER &&
+create proc pro.[uspGetServiceTitle](@ownerID int)
+
+begin
+
+select servid, serviceName, [DateTime], updateTime, IsDeleted, isSystem from pro.[services]
+
+end&&
+DELIMITER;
+
+
+
+
+
+DELIMITER &&
+create proc pro.[uspgetOnerServices](@ownerID int ,@productID int = 0)
+begin
+
+
+if isnull(@productID,0) = 0
+begin
+		select sdId, serviceId, ProductId, DateTime, updateTime, IsDeleted, maxValue, value, periodCounter from pro.[servicesDetail]
+end
+else
+begin 
+		select sdId, serviceId, ProductId, DateTime, updateTime, IsDeleted, maxValue, value, periodCounter from pro.[servicesDetail] where ProductId= @productID
+end
+END&&
+DELIMITER;
