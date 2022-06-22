@@ -11,7 +11,7 @@ import pyodbc
 import pandas as pd
 from  viewModel.productsVM import locpoint, product as proc
 
-from viewModel.mViewModels import Settingg, CarService, CarServiceDetailVM
+from viewModel.mViewModels import Settingg, CarService, CarServiceDetailVM,WrongAreaVM,WrongAreaDetail
 from viewModel.userVM import User
 from viewModel.tokenVm import Token
 from dateutil.relativedelta import *
@@ -214,3 +214,72 @@ class dbEntity:
             
         
         return res
+
+    def getServiceDetails(self,productID):
+        """get all Product servicsess of Online User that is avalable"""
+        qury = """select sd.sdId,s.servid,s.serviceName,sd.ProductId,sd.DateTime,sd.updateTime,sd.IsDeleted,sd.maxValue,sd.value,sd.periodCounter,s.iconUrl
+                    from pro.servicesDetail as sd 
+                    join pro.[services] as s on sd.serviceId =s.servid
+                    where sd.IsDeleted <>1 and s.IsDeleted<>1 and sd.ProductId =   {productID}""".format(productID=productID)
+        res = []
+        self.cursor.execute(qury) 
+        row = self.cursor.fetchone() 
+        while row: 
+            p = CarServiceDetailVM()
+            p.sdId= row[0]
+            p.serviceId= row[1]
+            p.seviceName= row[2]
+            p.ProductId =row[3]
+            p.DateTime=row[4]
+            p.updateTime = row[5]
+            p.IsDeleted=row[6]
+            p.maxValue= row[7]
+            p.value =row[8]
+            p.periodCounter = row[9]
+            p.iconUrl =row[10]    
+            res.append(p)
+            
+            row = self.cursor.fetchone()
+            
+        
+        return res
+
+    def getWrongArea(self,productID):
+        "get Wrong Area based on productID"
+        qury = f"""select ID, ProductId, AreaName, DateTime, updateTime, IsDeleted from pro.wrongArea where ProductId = {productID} """
+        
+        wrongArea = []
+        self.cursor.execute(qury) 
+        row = self.cursor.fetchone() 
+        while row: 
+            p = WrongAreaVM()
+            p.ID= row[0]
+            p.ProductId= row[1]
+            p.AreaName= row[2]
+            p.DateTime = row[3]
+            p.updateTime = row[4]
+            p.IsDeleted = row[5]
+            p.details= self.getWrongAreaDeatil(row[0])
+            wrongArea.append(p)
+            row = self.cursor.fetchone()
+            
+        
+        return wrongArea
+    
+    
+    def getWrongAreaDeatil(self,wraID:int):
+        qurydetail = f"""select ID, wrongAreaID, Longitude, latitude from pro.wrongAreaDetail as wrad
+                                where wrad.wrongAreaID =  {wraID} """
+        wrongAreaDeail = []
+        self.cursor.execute(qurydetail) 
+        row = self.cursor.fetchone() 
+        while row: 
+            p = WrongAreaDetail()
+            p.ID= row[0]
+            p.wrongAreaID= row[1]
+            p.Longitude= row[2]
+            p.latitude = row[3]
+            wrongAreaDeail.append(p)
+            row = self.cursor.fetchone()
+        
+        return wrongAreaDeail

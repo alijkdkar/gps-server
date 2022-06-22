@@ -282,8 +282,11 @@ def modifyLocation():
   return f"""{{status:200,msg:"query Success",payload:[]}}"""
 
 
-
-def modifyServices(token,productID,servicesJson):
+@app.route("/modifyServices",methods=["GET"])
+def modifyServices():
+  token =request.args.get("token",default="",type=str)
+  productID =request.args.get("productID",default=None,type=int)
+  servicesJson =request.args.get("servicesJson",default=None,type=int)
   if token == "" or token =="":
     return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
   
@@ -302,7 +305,32 @@ def GetServicesTitle():
   return """{{status:200,msg:"query Success",payload:{json_string}}}""".format(json_string =resualt) 
 
 
+@app.route("/GetServiceDetails",methods=["GET"])
+def GetServiceDetails():
+  token =request.args.get("token",default="",type=str)
+  productID =request.args.get("productID",default=None,type=int)
+  if token == "" or token =="":
+    return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
+  
+  if Token().checkToken(token=token) == True:
+    tokenobj =  Token().create(token)
+    res =db.getServiceDetails(productID or tokenobj.id)
+    resualt = json.dumps([ob.__dict__ for ob in res], indent=4, sort_keys=True, default=str,ensure_ascii=False)
+    return """{{status:200,msg:"query Success",payload:{json_string}}}""".format(json_string =resualt)
 
+
+@app.route("/getWrongArea",methods=["GET"])
+def getWrongArea():
+    token =request.args.get("token",default="",type=str)
+    productID =request.args.get("productID",default=None,type=int)
+    if token == "" or token =="":
+      return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
+    if Token().checkToken(token=token) == True:
+      tokenobj =  Token().create(token)
+      res = db.getWrongArea(productID or tokenobj.id)
+      resualt = json.dumps([ob.__dict__ for ob in res], indent=4, sort_keys=True, default=str,ensure_ascii=False)
+      return """{{status:200,msg:"query Success",payload:{json_string}}}""".format(json_string =resualt)
+    
 
 # if __name__ == "__main__":
     # app.run()

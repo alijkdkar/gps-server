@@ -173,6 +173,7 @@ go
 		 [updateTime] Datetime default getdate(),
 		 IsDeleted bit default 0,
 		 isSystem bit default 1,
+       iconUrl NVARCHAR(200)
 		 
          )
    END;
@@ -226,12 +227,36 @@ IF NOT EXISTS (SELECT 1  FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'pr
    END;
 
 
+GO
 
 
+
+IF NOT EXISTS (SELECT 1  FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'pro' AND TABLE_NAME = 'wrongArea')
+   BEGIN
+      CREATE TABLE pro.[wrongArea](
+         ID INT IDENTITY (1,1),
+		 [ProductId] int not null,
+       [AreaName] nvarchar null,
+         [DateTime] Datetime default getdate(),
+		 [updateTime] Datetime default getdate(),
+		 IsDeleted bit default 0
+         )
+   END;
 
 
 go
 
+IF NOT EXISTS (SELECT 1  FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'pro' AND TABLE_NAME = 'wrongAreaDetail')
+   BEGIN
+      CREATE TABLE pro.[wrongAreaDetail](
+         ID INT IDENTITY (1,1),
+         [wrongAreaID] int not null,
+          Longitude DECIMAL(12,9),
+		    latitude DECIMAL(12,9)
+         )
+   END;
+
+go
 
 --produtre 
 create  PROCEDURE [pro].[uspModifyProduct]
