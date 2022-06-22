@@ -1,7 +1,8 @@
 import base64
 from datetime import time,datetime
 import json
-from typing import Hashable
+from typing import Hashable, List
+from typing_extensions import Self
 from xmlrpc.client import Boolean, DateTime
 from hashlab import AESCipher
 from flask.json import jsonify
@@ -52,3 +53,30 @@ class CarServiceDetailVM :
     def toJson(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
+
+
+
+class WrongAreaVM:
+    def __init__(self):
+        self.ID : int = 0
+        self.productID : int=0
+        self.AreaName : str = ""
+        self.DateTime : str = ""
+        self.updateTime : str = ""
+        self.IsDeleted : int = 0 
+        self.details =[]
+    
+    def toJson(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+                sort_keys=True, indent=4)
+
+class WrongAreaDetail:
+    def __init__(self) -> None:
+        self.wdid :int=0
+        self.wrongAreaID : int=0
+        self.Longitude
+        self.latitude
+    def toJson(self):
+         return json.dumps(self, default=lambda o: o.__dict__, 
+                sort_keys=True, indent=4)
+        
