@@ -286,7 +286,8 @@ def modifyLocation():
 def modifyServices():
   token =request.args.get("token",default="",type=str)
   productID =request.args.get("productID",default=None,type=int)
-  servicesJson =request.args.get("servicesJson",default=None,type=int)
+  servicesJson =request.args.get("servicesJson",default=None,type=str)
+  print("_________",servicesJson,"_________")
   if token == "" or token =="":
     return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
   
@@ -309,6 +310,7 @@ def GetServicesTitle():
 def GetServiceDetails():
   token =request.args.get("token",default="",type=str)
   productID =request.args.get("productID",default=None,type=int)
+  print(productID)
   if token == "" or token =="":
     return  f"""{{status:401,msg:"bad Requst"}}""".strip("\n")
   

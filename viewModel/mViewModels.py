@@ -2,7 +2,6 @@ import base64
 from datetime import time,datetime
 import json
 from typing import Hashable, List
-from typing_extensions import Self
 from xmlrpc.client import Boolean, DateTime
 from hashlab import AESCipher
 from flask.json import jsonify
@@ -76,6 +75,7 @@ class WrongAreaDetail:
         self.wrongAreaID : int=0
         self.Longitude
         self.latitude
+
     def toJson(self):
          return json.dumps(self, default=lambda o: o.__dict__, 
                 sort_keys=True, indent=4)

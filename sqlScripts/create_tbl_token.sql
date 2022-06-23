@@ -435,10 +435,52 @@ GO
 
 
 
-create proc pro.[modifyOwnerService]
-@ownerId int 
+alter proc pro.[uspModifyService]
+@ProductID nvarchar(10)
+,@jsonServiceInput nvarchar(max)
+as 
 
-as
+declare @message nvarchar(100)='ذخیره با موفقعیت انجام شد', @validate int =1
+
+if ISNULL(@ProductID,'0')='0'
+begin 
+select @message = 'شناسه محصول نمیتواند خالی باشد',@validate=0
+end
+
+
+
+select @jsonServiceInput
+
+create table #inputs([DateTime] datetime,IsDeleted bit,ProductId int,maxalue int,periodCounter int , sdId int,serviceId int,updateTime DateTime,value int)
+
+insert #inputs
+SELECT *
+FROM OPENJSON(@jsonServiceInput) 
+  WITH (
+    [DateTime] datetime2 '$.DateTime',
+    IsDeleted bit '$.IsDeleted',
+    ProductId int '$.ProductId',
+    maxValue int '$.maxValue',
+    periodCounter int '$.periodCounter',
+	sdId int '$.sdId',
+	serviceId int '$.serviceId',
+	updateTime datetime2 '$.updateTime',
+	[value] int N'$.value'
+  );
+
+
+  update pro.servicesDetail 
+  set maxValue=x.maxalue,
+  value = x.value
+  ,updateTime =  GETDATE()
+  from #inputs as x
+  where x.sdId<>0 and not exists (select 1 from pro.servicesDetail as sd where sd.ProductId = pro.servicesDetail.ProductId and serviceId=serviceId)
+  
+  
+
+  insert into pro.servicesDetail(DateTime,IsDeleted,maxValue,periodCounter,ProductId,serviceId,updateTime,value)
+  select GETDATE(),IsDeleted,maxalue,periodCounter,@ProductID,serviceId,null from #inputs as ii
+  where sdId = 0 and not exists (select 1 from pro.servicesDetail as sd where sd.ProductId = ii.ProductId and ii.serviceId=sd.serviceId)
 
 
 
