@@ -433,8 +433,6 @@ GO
 
 -------end function------------
 
-
-
 alter proc pro.[uspModifyService]
 @ProductID nvarchar(10)
 ,@jsonServiceInput nvarchar(max)
@@ -449,7 +447,7 @@ end
 
 
 
-select @jsonServiceInput
+
 
 create table #inputs([DateTime] datetime,IsDeleted bit,ProductId int,maxalue int,periodCounter int , sdId int,serviceId int,updateTime DateTime,value int)
 
@@ -468,19 +466,22 @@ FROM OPENJSON(@jsonServiceInput)
 	[value] int N'$.value'
   );
 
+  --select * from #inputs
 
   update pro.servicesDetail 
   set maxValue=x.maxalue,
   value = x.value
   ,updateTime =  GETDATE()
   from #inputs as x
-  where x.sdId<>0 and not exists (select 1 from pro.servicesDetail as sd where sd.ProductId = pro.servicesDetail.ProductId and serviceId=serviceId)
+  where  x.sdId=pro.servicesDetail.sdId
   
   
 
   insert into pro.servicesDetail(DateTime,IsDeleted,maxValue,periodCounter,ProductId,serviceId,updateTime,value)
-  select GETDATE(),IsDeleted,maxalue,periodCounter,@ProductID,serviceId,null from #inputs as ii
+  select GETDATE(),IsDeleted,maxalue,periodCounter,@ProductID,serviceId,null ,ii.value
+  from #inputs as ii
   where sdId = 0 and not exists (select 1 from pro.servicesDetail as sd where sd.ProductId = ii.ProductId and ii.serviceId=sd.serviceId)
+
 
 
 
