@@ -168,7 +168,7 @@ class dbEntity:
     def modifyServices(self,productID,serviceJson):
         """Modify location create and update"""
         try:
-            query1 = "exec [pro].[uspModifyService] @ProductID=N'{prodID}' , @jsonServiceInput = N'{service}'".format(prodID=productID,service=serviceJson)
+            query1 = f"exec [pro].[uspModifyService] @ProductID=N'{productID}' , @jsonServiceInput = N'{serviceJson}'"
             print(query1)
             self.cursor.execute(query1)
             self.cursor.commit()
@@ -218,9 +218,9 @@ class dbEntity:
     def getServiceDetails(self,productID):
         """get all Product servicsess of Online User that is avalable"""
         qury = """select sd.sdId,s.servid,s.serviceName,sd.ProductId,sd.DateTime,sd.updateTime,sd.IsDeleted,sd.maxValue,sd.value,sd.periodCounter,s.iconUrl
-                    from pro.servicesDetail as sd 
-                    join pro.[services] as s on sd.serviceId =s.servid
-                    where sd.IsDeleted <>1 and s.IsDeleted<>1 and sd.ProductId =   {productID}""".format(productID=productID)
+                    from pro.[services] as s
+                    left join pro.servicesDetail as sd  on sd.serviceId =s.servid and sd.IsDeleted <>1 and s.IsDeleted<>1 and sd.ProductId ={productID}""".format(productID=productID)
+        print(qury)
         res = []
         self.cursor.execute(qury) 
         row = self.cursor.fetchone() 
