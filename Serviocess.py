@@ -1,6 +1,7 @@
 
 from ast import Str
 from asyncio.windows_events import NULL
+import imp
 from typing import Hashable, List, Text
 from flask import Flask , request, jsonify
 import base64
@@ -8,31 +9,26 @@ import io
 from flask_cors import CORS
 # from mViewModels import Settingg, User
 import json
-from matplotlib.style import use
-import pyodbc
-from dBRepository import dbEntity 
+##from dBRepository import dbEntity 
 import myutils as utils
 from viewModel.mViewModels import Settingg
 from viewModel.tokenVm import  Token
 from viewModel.userVM import   User
 from viewModel.productsVM import  product as ProductVm
 from hashlab import AESCipher
-#import hashlib as hasher
-import pandas as pd
+from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import constes
-
-
-
-
+from viewModel.ViewModels import db
 
 from datetime import datetime
-import re
 
-
+# db = SQLAlchemy()
 app = Flask(__name__)
 CORS(app)
-db = dbEntity()
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
+# initialize the app with the extension
+db.init_app(app)
 
 @app.route("/")
 def home():
