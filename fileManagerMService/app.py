@@ -16,7 +16,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # app.config['REDIS_PORT'] = 6379
 # app.config['REDIS_DB'] = 0
 #redis1 = Redis(app)
-redis1 = redis.Redis(host="127.0.0.1",port="6379",db=0)
+redis1 = redis.Redis(host="some-redis",port="6379",db=0)
 
 
 
@@ -89,4 +89,4 @@ def allowed_file(filename):
 
 
 if __name__ == '__main__':
-    app.run(host="127.0.0.1",port= 555)
+    app.run(debug=True,host='0.0.0.0', port=5055)
