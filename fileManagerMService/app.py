@@ -18,6 +18,14 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 #redis1 = Redis(app)
 redis1 = redis.Redis(host="some-redis",port="6379",db=0)
 
+#todo : comperess image on save
+#todo : comperess image on load
+#todo : face detection on image
+#todoooo : redefine redise db
+#todoooo : save date time of modiy images
+#todo : search on images
+#todo : load images as list
+#todooo : load images as base64
 
 
 
@@ -71,6 +79,8 @@ def download(filename:str):
         return """{{status:200,msg:"file not exits"}}"""
     uploads = os.path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
     return  send_from_directory(uploads, str(orginalFileName))
+
+
 
 
 
