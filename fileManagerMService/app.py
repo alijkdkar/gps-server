@@ -6,10 +6,18 @@ from flask import send_from_directory
 from flask import current_app
 import base64
 import redis 
-
+import struct
+import binascii
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS_MAGIC_NUMBER = {'txt':'EF BB BF'
+                                    , 'pdf':'25 50 44 46 2D'
+                                    , 'png':'89 50 4E 47 0D 0A 1A 0A'
+                                    , 'jpg':'FF D8 FF E0'
+                                    , 'jpeg':'FF D8 FF'
+                                    , 'gif':'47 49 46 38 37 61'}
+
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -64,14 +72,14 @@ def upload_file():
         
         if not os.path.exists(app.config['UPLOAD_FOLDER']):
             os.makedirs(app.config['UPLOAD_FOLDER'])
-
+        
+        print(">>>>",file.headers)
+        
+        
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            justfileName ,filename = getSecureFileName(file.filename)
-            #path = current_app.root_path+"/"+app.config['UPLOAD_FOLDER']+
-            print(os.path.join(current_app.root_path,app.config['UPLOAD_FOLDER'], filename))
-            file.save(os.path.join(current_app.root_path,app.config['UPLOAD_FOLDER'], filename))
-            redis1.set(justfileName,filename)
+            filename, justfileName = saveFileOnDirectory(file)
+            if filename is None or justfileName is None:
+                return """{{status:200,msg:"File extention has damaged"}}"""
             return jsonify(f"file_name:{justfileName}")
     return '''
     <!doctype html>
@@ -82,6 +90,19 @@ def upload_file():
       <input type=submit value=Upload>
     </form>
     '''
+
+def saveFileOnDirectory(file):
+    filename = secure_filename(file.filename)
+    justfileName ,filename = getSecureFileName(file.filename)
+            #path = current_app.root_path+"/"+app.config['UPLOAD_FOLDER']+
+    filePath = os.path.join(current_app.root_path,app.config['UPLOAD_FOLDER'], filename)
+    file.save(filePath)
+    if checkFileRealExtention(fileName=filePath):
+        redis1.set(justfileName,filename)
+        return filename,justfileName
+    else:
+        os.remove(filePath)
+        return None,None
 
 
 
@@ -142,6 +163,26 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
     
+def checkFileRealExtention(fileName):
+    fileExt = getFileFileExtention(fileName)
+    magicNum = ALLOWED_EXTENSIONS_MAGIC_NUMBER[fileExt]
+    with open(fileName, mode='rb') as file: # b is important -> binary
+        fileContent = file.read()
+        header = str(binascii.hexlify(fileContent))[2:-1]
+    if header.startswith(magicNum):
+        return True
+    else:
+        return False
+
+
+
+def getFileFileExtention(file):
+    if '.' in file:
+        return file and file.split(".")[1]
+    else:
+        return None
+    
+
 
 
 
