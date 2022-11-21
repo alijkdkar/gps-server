@@ -48,7 +48,7 @@ def home():
 
 @app.route("/getToken",methods=["GET"])
 def getToken():
-    return Token.create_new_HashToken()
+    return Token.create_new_HashToken() 
 
 
 # if __name__ == "__main__":

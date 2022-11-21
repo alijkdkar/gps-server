@@ -1,2 +1,4 @@
 venv/lib/python3.10/site-packages/setuptools/command/saveopts.py
 venv/
+fileManagerMService/myVenv
+fileManagerMService/uploads
